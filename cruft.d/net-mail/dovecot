@@ -1,0 +1,7 @@
+^/etc/ssl/dovecot/server\.crt$
+^/etc/ssl/dovecot/server\.csr$
+^/etc/ssl/dovecot/server\.key$
+^/etc/ssl/dovecot/server\.pem$
+^/var/lib/dovecot/instances$
+^/var/lib/dovecot/mounts$
+^/var/lib/dovecot/ssl-parameters\.dat$

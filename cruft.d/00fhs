@@ -1,0 +1,203 @@
+# FHS 3.0 items to ignore
+ 
+# Essential user command binaries (for use by all users)
+#^/bin/$
+ 
+# Static files of the boot loader
+^/boot/$
+ 
+# Device files
+^/dev$
+ 
+# Host-specific system configuration
+#^/etc/$
+#^/etc/X11/$                # Configuration for the X Window system (optional)
+#^/etc/X11/xorg\.conf$      # The configuration file for X.org versions 7 and later (optional)
+#^/etc/X11/Xmodmap$         # Global X11 keyboard modification file (optional)
+^/etc/opt/$                # Configuration for /opt
+#^/etc/sgml/$               # Configuration for SGML (optional)
+#^/etc/xml/$                # Configuration for XML (optional)
+#^/etc/csh\.login$          # Systemwide initialization file for C shell logins (optional)
+#^/etc/exports$             # NFS filesystem access control list (optional)
+^/etc/fstab$               # Static information about filesystems (optional)
+#^/etc/ftpusers$            # FTP daemon user access control list (optional)
+#^/etc/gateways$            # File which lists gateways for routed (optional)
+#^/etc/gettydefs$           # Speed and terminal settings used by getty (optional)
+^/etc/group$                # User group file (optional)
+#^/etc/host\.conf$          # Resolver configuration file (optional)
+#^/etc/hosts$               # Static information about host names (optional)
+#^/etc/hosts\.allow$        # Host access file for TCP wrappers (optional)
+#^/etc/hosts\.deny$	        # Host access file for TCP wrappers (optional)
+#^/etc/hosts\.equiv$        # List of trusted hosts for rlogin, rsh, rcp (optional)
+#^/etc/hosts\.lpd$	        # List of trusted hosts for lpd (optional)
+#^/etc/inetd\.conf$	        # Configuration file for inetd (optional)
+#^/etc/inittab$             # Configuration file for init (optional)
+#^/etc/issue$               # Pre-login message and identification file (optional)
+^/etc/ld\.so\.conf$        # List of extra directories to search for shared libraries (optional)
+#^/etc/motd$                # Post-login message of the day file (optional)
+^/etc/mtab$                # Dynamic information about filesystems (optional)
+#^/etc/mtools\.conf$        # Configuration file for mtools (optional)
+#^/etc/networks$            # Static information about network names (optional)
+^/etc/passwd$              # The password file (optional)
+#^/etc/printcap$            # The lpd printer capability database (optional)
+#^/etc/profile$             # Systemwide initialization file for sh shell logins (optional)
+#^/etc/protocols$           # IP protocol listing (optional)
+^/etc/resolv\.conf$        # Resolver configuration file (optional)
+#^/etc/rpc$                 # RPC protocol listing (optional)
+#^/etc/securetty$           # TTY access control for root login (optional)
+#^/etc/services$            # Port names for network services (optional)
+#^/etc/shells$              # Pathnames of valid login shells (optional)
+#^/etc/syslog\.conf$        # Configuration file for syslogd (optional)
+
+# User home directories (optional)
+^/home$
+ 
+# Essential shared libraries and kernel modules
+^/lib[^/]*/$
+^/lib[^/]*/cpp$            # If a C preprocessor is installed, /lib/cpp must be a reference to it, for historical reasons.
+#^/lib[^/]*/libc\.so\..*$   # The dynamically-linked C library (optional)
+#^/lib[^/]*/ld.*$		    # The execution time linker/loader (optional)
+#^/lib[^/]*/modules/$	    # Loadable kernel modules (optional)
+
+# Mount point for removeable media
+#^/media/$
+#^/media/floppy[0-9]*/$     # Floppy drive (optional)
+#^/media/cdrom[0-9]*/$		# CD-ROM drive (optional)
+#^/media/cdrecorder[0-9]*/$ # CD writer (optional)
+#^/media/zip[0-9]*/$		# Zip drive (optional)
+
+# Mount point for a temporarily mounted filesystem
+^/mnt$
+ 
+# Add-on application software packages
+#^/opt/$
+ 
+# Home directory for the root user (optional)
+^/root$
+
+# Run-time variable data
+^/run$
+
+# System binaries
+#^/sbin/$
+#^/sbin/fastboot$           # Reboot the system without checking the disks (optional)
+#^/sbin/fasthalt$           # Stop the system without checking the disks (optional)
+#^/sbin/fdisk$              # Partition table manipulator (optional)
+#^/sbin/fsck$               # File system check and repair utility (optional)
+#^/sbin/fsck\..*$           # File system check and repair utility for a specific filesystem (optional)
+#^/sbin/getty$              # The getty program (optional)
+#^/sbin/halt$               # Command to stop the system (optional)
+#^/sbin/ifconfig$           # Configure a network interface (optional)
+#^/sbin/init$               # Initial process (optional)
+#^/sbin/mkfs$               # Command to build a filesystem (optional)
+#^/sbin/mkfs\..*$           # Command to build a specific filesystem (optional)
+#^/sbin/mkswap$             # Command to set up a swap area (optional)
+#^/sbin/reboot$             # Command to reboot the system (optional)
+#^/sbin/route$              # IP routing table utility (optional)
+#^/sbin/shutdown$           # Command to bring the system down.
+#^/sbin/swapon$             # Enable paging and swapping (optional)
+#^/sbin/swapoff$            # Disable paging and swapping (optional)
+#^/sbin/update$             # Daemon to periodically flush filesystem buffers (optional)
+
+# Data for services provided by this system
+#^/srv/$
+ 
+# Temporary files
+^/tmp$
+ 
+# Shareable, read-only data
+#^/usr/$
+#^/usr/bin/$                # Most user commands
+#^/usr/bin/cpp$             # The usual placement of this binary is /usr/bin/cpp
+#^/usr/bin/expect           # Program for interactive dialog (optional)
+#^/usr/bin/perl             # The Practical Extraction and Report Language (optional)
+#^/usr/bin/python           # The Python interpreted language (optional)
+#^/usr/bin/tclsh            # Simple shell containing Tcl interpreter (optional)
+#^/usr/bin/wish             # Simple Tcl/Tk windowing shell (optional)
+#^/usr/games/$              # Games and educational binaries (optional)
+#^/usr/include/$            # Header files included by C programs
+#^/usr/include/bsd/$        # BSD compatibility include files (optional)
+#^/usr/lib[^/]*/$           # Libraries
+#^/usr/lib[^/]*/sendmail$   # For historical reasons, /usr/lib/sendmail must be a symbolic link which resolves to the sendmail-compatible command provided by the system's mail transfer agent, if the latter exists.
+#^/usr/libexec/$            # Binaries run by other programs (optional)
+^/usr/local/$              # Local hierarchy
+^/usr/local/bin/$          # Local binaries
+#^/usr/local/etc/$          # Host-specific system configuration for local binaries
+#^/usr/local/games/$        # Local game binaries
+^/usr/local/include/$      # Local C header files
+^/usr/local/lib[^/]*/$     # Local libraries
+^/usr/local/sbin/$         # Local system binaries
+^/usr/local/share/$        # Local architecture-independent hierarchy
+^/usr/local/src/$          # Local source code
+#^/usr/sbin/$               # Non-essential standard system binaries
+#^/usr/share/$              # Architecture-independent data
+#^/usr/share/color/$        # Color management information (optional)
+#^/usr/share/color/icc/$    # ICC color profiles (optional)
+#^/usr/share/dict/$         # Word lists (optional)
+#^/usr/share/dict/words$    # List of English words (optional)
+#^/usr/share/doc/$          # Miscellaneous documentation (optional)
+#^/usr/share/games/$        # Static data files for /usr/games (optional)
+#^/usr/share/info/$         # Primary directory for GNU Info system (optional)
+#^/usr/share/locale/$       # Locale information (optional)
+#^/usr/share/man/$          # Online manuals
+#^/usr/share/man/man1/$     # User programs (optional)
+#^/usr/share/man/man2/$     # System calls (optional)
+#^/usr/share/man/man3/$     # Library calls (optional)
+#^/usr/share/man/man4/$     # Special files (optional)
+#^/usr/share/man/man5/$     # File formats (optional)
+#^/usr/share/man/man6/$     # Games (optional)
+#^/usr/share/man/man7/$     # Miscellaneous (optional)
+#^/usr/share/man/man8/$     # System administration (optional)
+#^/usr/share/misc/$         # Miscellaneous architecture-independent data
+#^/usr/share/misc/ascii$    # ASCII character set table (optional)
+#^/usr/share/misc/termcap$  # Terminal capability database (optional)
+#^/usr/share/misc/termcap.db$ # Terminal capability database (optional)
+#^/usr/share/nls/$          # Message catalogs for Native language support (optional)
+#^/usr/share/ppd/$          # Printer definitions (optional)
+#^/usr/share/sgml/$         # SGML data (optional)
+#^/usr/share/sgml/docbook/$ # docbook DTD (optional)
+#^/usr/share/sgml/tei/$     # tei DTD (optional)
+#^/usr/share/sgml/html/$    # html DTD (optional)
+#^/usr/share/sgml/mathml/$  # mathml DTD (optional)
+#^/usr/share/terminfo/$     # Directories for terminfo database (optional)
+#^/usr/share/tmac/$         # troff macros not distributed with groff (optional)
+#^/usr/share/xml/$          # XML data (optional)
+#^/usr/share/xml/docbook/$  # docbook XML DTD (optional)
+#^/usr/share/xml/xhtml/$    # XHTML DTD (optional)
+#^/usr/share/xml/mathml/$   # MathML DTD (optional)
+#^/usr/share/zoneinfo/$     # Timezone information and configuration (optional)
+#^/usr/src/$                # Source code (optional)
+ 
+# Variable data files
+#^/var/$
+#^/var/account/$            # Process accounting logs (optional)
+#^/var/cache/$              # Application cache data
+#^/var/cache/fonts/$        # Locally-generated fonts (optional)
+#^/var/cache/man/$          # Locally-formatted manual pages (optional)
+#^/var/cache/www/$          # WWW proxy or cache data (optional)
+#^/var/crash/$              # System crash dumps (optional)
+#^/var/games/$              # Variable game data (optional)
+#^/var/lib/$                # Variable state information
+#^/var/lib/color/$          # Color management information (optional)
+#^/var/lib/hwclock/$        # State directory for hwclock (optional)
+#^/var/lib/hwclock/adjtime$
+#^/var/lib/misc/$           # Miscellaneous state data
+#^/var/lib/xdm/$            # X display manager variable data (optional)
+^/var/lock/$               # Lock files
+#^/var/log/$                # Log files and directories
+^/var/log/lastlog$         # record of last login of each user
+^/var/log/messages$        # system messages from syslogd
+^/var/log/wtmp             # record of all logins and logouts
+#^/var/mail/$               # User mailbox files (optional)
+#^/var/opt/$                # Variable data for /opt
+^/var/run$                 # Run-time variable data (symlink to /run)
+#^/var/spool/$              # Application spool data
+#^/var/spool/lpd/$          # Printer spool directory (optional)
+#^/var/spool/lpd/lpd.lock$
+#^/var/spool/lpd/printer/$  # Spools for a specific printer (optional)
+#^/var/spool/mqueue/$       # Outgoing mail queue (optional)
+#^/var/spool/news/$         # News spool directory (optional)
+#^/var/spool/rwho/$         # Rwhod files (optional)
+#^/var/spool/uucp/$         # Spool directory for UUCP (optional)
+^/var/tmp/$                # Temporary files preserved between system reboots
+#^/var/yp/$                 # Network Information Service (NIS) database files (optional) 

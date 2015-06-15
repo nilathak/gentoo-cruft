@@ -1,0 +1,5 @@
+^/etc/printcap$
+^/var/cache/cups$
+^/var/log/cups/access_log$
+^/var/log/cups/error_log$
+^/var/spool/cups$

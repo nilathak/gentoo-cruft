@@ -1,0 +1,2 @@
+^/var/lib/openntpd/chroot/etc/localtime$
+^/var/lib/openntpd/ntpd\.drift$

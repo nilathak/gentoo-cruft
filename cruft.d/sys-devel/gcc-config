@@ -1,0 +1,5 @@
+#!/bin/bash
+echo ^/etc/env\\.d/0\(4\|5\)gcc-`gcc -dumpmachine`$
+echo ^/etc/env\\.d/gcc/\\.NATIVE$
+echo ^/etc/env\\.d/gcc/config-`gcc -dumpmachine`$
+echo ^/etc/ld\\.so\\.conf\\.d/05gcc-`gcc -dumpmachine`\\.conf$

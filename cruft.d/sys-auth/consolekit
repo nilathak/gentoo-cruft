@@ -1,0 +1,3 @@
+^/var/log/ConsoleKit$
+^/var/run/ConsoleKit$
+^/var/run/console$

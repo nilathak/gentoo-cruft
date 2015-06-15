@@ -1,0 +1,5 @@
+^/etc/ssl/apache2/server\.crt$
+^/etc/ssl/apache2/server\.csr$
+^/etc/ssl/apache2/server\.key$
+^/etc/ssl/apache2/server\.pem$
+^/var/log/apache2$

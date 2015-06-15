@@ -1,0 +1,9 @@
+^/etc/env\.d/03opencl$
+^/usr/include/CL/cl.h$
+^/usr/include/CL/cl.hpp$
+^/usr/include/CL/cl_ext.h$
+^/usr/include/CL/cl_gl.h$
+^/usr/include/CL/cl_gl_ext.h$
+^/usr/include/CL/cl_platform.h$
+^/usr/include/CL/opencl.h$
+^/usr/lib[^/]*/libOpenCL\.so(\.1)$

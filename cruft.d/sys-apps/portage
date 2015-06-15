@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+import os
+import portage
+vartree = portage.db[portage.root]["vartree"].dbapi
+porttree = portage.db[portage.root]["porttree"].dbapi
+
+# ignore configured portage dirs
+print('^' + porttree.settings.get('PORTDIR', '') + '$')
+print('^' + porttree.settings.get('PORTAGE_TMPDIR', '') + '/portage$')
+
+# ignore all portage overlay dirs
+for po in porttree.settings.get('PORTDIR_OVERLAY', '').split():
+    print('^' + po + '$')
+
+# in case you want to clean up this cache dir: rm -rf, emerge --regen
+print('^/var/cache/edb$')
+
+# find obsolete category dirs
+db_cache_dir = '/var/db/pkg/'
+print('^' + db_cache_dir + '$')
+for pkg in sorted(vartree.cpv_all()):
+    regex = str(pkg)
+    regex = regex.replace('+', '\+')
+    regex = regex.replace('.', '\.')
+    # - ignore in-use category dirs
+    # - ignore contents of package dirs
+    for r in [os.path.dirname(regex) + '/', regex]:
+        print('^' + os.path.join(db_cache_dir, r) + '$')
+
+portage_paths = [
+    '/etc/portage/package.keywords/',
+    '/etc/portage/package.mask/',
+    '/etc/portage/package.unmask/',
+    '/etc/portage/package.use/',
+    '/etc/portage/repos.conf/',
+    '/etc/portage/repos.conf/gentoo.conf',
+    '/etc/profile.env',
+    '/var/lib/module-rebuild/moduledb',
+    '/var/lib/portage/config',
+    '/var/lib/portage/preserved_libs_registry',
+    '/var/lib/portage/world_sets',
+    '/var/log/emerge.log',
+    ]
+for p in portage_paths:
+    regex = p
+    regex = regex.replace('+', '\+')
+    regex = regex.replace('.', '\.')
+    print('^' + regex + '$')

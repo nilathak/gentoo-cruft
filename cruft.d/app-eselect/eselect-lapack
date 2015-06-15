@@ -1,0 +1,3 @@
+^/etc/env\.d/lapack/lib[^/]*/config$
+^/usr/lib[^/]*/liblapack\.(a|so|so\.0)$
+^/usr/lib[^/]*/pkgconfig/lapack\.pc$

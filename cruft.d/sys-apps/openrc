@@ -1,0 +1,8 @@
+^/lib[^/]*/rc/cache/$
+^/lib[^/]*/rc/cache/depconfig$
+^/lib[^/]*/rc/cache/deptree$
+^/lib[^/]*/rc/cache/nettree$
+^/lib[^/]*/rc/cache/rc.log$
+^/lib[^/]*/rc/cache/softlevel$
+^/lib[^/]*/rc/console/$
+^/var/log/rc\.log$

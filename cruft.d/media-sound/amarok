@@ -1,0 +1,2 @@
+# recommended name & location for external mysql db
+^/var/lib/mysql/amarok$

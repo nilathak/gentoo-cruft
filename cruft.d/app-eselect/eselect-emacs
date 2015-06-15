@@ -1,0 +1,13 @@
+^/usr/bin/emacsclient$
+^/usr/bin/b2m$
+^/usr/bin/ebrowse$
+^/usr/bin/rcs-checkin$
+^/usr/bin/grep-changelog$
+^/usr/share/man/man1/emacsclient\.1\.bz2$
+^/usr/share/man/man1/b2m\.1\.bz2$
+^/usr/share/man/man1/ebrowse\.1\.bz2$
+^/usr/share/man/man1/rcs-checkin\.1\.bz2$
+^/usr/share/man/man1/grep-changelog\.1\.bz2$
+^/usr/share/man/man1/ctags\.1\.bz2$
+^/usr/share/man/man1/emacs\.1\.bz2$
+^/usr/share/man/man1/etags\.1\.bz2$

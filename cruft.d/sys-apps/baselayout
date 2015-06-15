@@ -1,0 +1,3 @@
+# versions > 1 requires this file to exist.
+# sys-libs/timezone-date is evaluating its contents
+^/etc/timezone$

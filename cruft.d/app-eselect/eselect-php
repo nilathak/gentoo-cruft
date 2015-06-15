@@ -1,0 +1,7 @@
+# apache2
+^/usr/lib[^/]*/apache2/modules/libphp5\.so$
+
+# cli
+^/usr/bin/php$
+^/usr/bin/php-config$
+^/usr/bin/phpize$

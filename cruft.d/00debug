@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# host-specific repo
+echo ^/\.git$
+cd / && git ls-files | sed 's/\(.*\)/\/\1/' | sed 's/[^\/]*\(\/.*\)/\1/' | sed 's/\(\/.*\)/\1/' | sed 's/\+/\\+/g' | sed 's/\./\\./g' | sed 's/\(.*\)/^\1$/'
+
+# cruft/pylon repo
+echo ^/usr/bin/\.git$
+cd /usr/bin && git ls-files | sed 's/\(.*\)/\/usr\/bin\/\1/' | sed 's/[^\/]*\(\/.*\)/\1/' | sed 's/\(\/.*\)/\1/' | sed 's/\+/\\+/g' | sed 's/\./\\./g' | sed 's/\(.*\)/^\1$/'
+
+# add non-cruft files to ignore list to avoid known MD5 fails during check (comment out and re-check periodically):
+# OK, nodoc feature
+### cruft(2015-03-21 14:26:12,998) ERROR: dev-tex/xcolor-2.11: /usr/share/texmf-site/doc/latex/xcolor/xcolor.pdf does not exist
+### cruft(2015-03-21 14:26:12,999) ERROR: dev-tex/xcolor-2.11: /usr/share/texmf-site/doc/latex/xcolor/xcolor2.dvi does not exist
+### cruft(2015-03-21 14:26:13,000) ERROR: dev-tex/xcolor-2.11: /usr/share/texmf-site/doc/latex/xcolor/xcolor3.dvi does not exist
+### cruft(2015-03-21 14:26:13,001) ERROR: dev-tex/xcolor-2.11: /usr/share/texmf-site/doc/latex/xcolor/xcolor4.dvi does not exist
+### cruft(2015-03-21 14:26:13,005) ERROR: dev-tex/xcolor-2.11: /usr/share/texmf-site/doc/latex/xcolor/xcolor2.pdf does not exist
+### cruft(2015-03-21 14:26:13,014) ERROR: dev-tex/xcolor-2.11: /usr/share/texmf-site/doc/latex/xcolor/xcolor1.dvi does not exist
+### cruft(2015-03-21 14:28:30,296) ERROR: sys-fs/udisks-2.1.3: /usr/share/gtk-doc/html/udisks2 does not exist
+### cruft(2015-03-21 14:29:41,063) ERROR: sys-power/upower-pm-utils-0.9.23-r2: /usr/share/gtk-doc/html/UPower does not exist
+echo ^/usr/share/texmf-site/doc/latex/xcolor/xcolor.pdf$
+echo ^/usr/share/texmf-site/doc/latex/xcolor/xcolor2.dvi$
+echo ^/usr/share/texmf-site/doc/latex/xcolor/xcolor3.dvi$
+echo ^/usr/share/texmf-site/doc/latex/xcolor/xcolor4.dvi$
+echo ^/usr/share/texmf-site/doc/latex/xcolor/xcolor2.pdf$
+echo ^/usr/share/texmf-site/doc/latex/xcolor/xcolor1.dvi$
+echo ^/usr/share/gtk-doc/html/udisks2$
+echo ^/usr/share/gtk-doc/html/UPower$
+# OK, modified when enabling auto-login
+### cruft(2015-02-28 23:26:51,351) ERROR: kde-base/kdm-4.11.14: /usr/share/config/kdm/kdmrc has incorrect MD5sum
+echo ^/usr/share/config/kdm/kdmrc$
+
+# keep files without owner
+# remove and delete folder if it appears in cruft list together with .keep file => portage will create directories anyway if needed
+# - .keep files are cruft if .keep_xyz files are provided by package (ie. cron.daily)
+echo .*/\\.keep$
+
+# FIXME search for matching pyc & py in ALL folders, not just PYTHONPATH
+# this also results in huge exclusion list from sanity check -> verify this
+echo .*\\.pyc$
+echo .*\\.pyo$
+# add __pycache__ pattern to ignore python3 bytecode dirs
+echo .*/__pycache__$
+
+# brother printer driver
+echo ^/usr/local/Brother/filter/$
+echo ^/usr/libexec/cups/filter/brlpdwrapperMFC7820N$
+echo ^/usr/share/cups/model/MFC7820N.ppd$
+
+# FIXME assign to some package, this is not covered by FHS 2.3
+# Virtual filesystem documenting kernel and process status as text files, e.g., uptime, network.
+echo ^/proc$
+# Kernel sysfs mount point
+echo ^/sys$
+
+# basic linux
+echo ^/etc/localtime$
+
+# the softlinks in this dir are not removed when a service is unemerged.
+# neither do they belong to the service. how to clean up broken softlinks?
+echo ^/etc/runlevels$
+
+# Oh, yes, and that thing I mentioned at the beginning about "pidof" having an interesting
+# lineage. As it turns out, this command is really just a symbolic link to the "killall5"
+# command:
+#     host # ls -l /sbin/pidof
+#     lrwxrwxrwx 1 root system 8 Feb 8 2007 /sbin/pidof -> killall5
+# The "killall5" program's sole function is to send a signal (take your pick) to all
+# processes except for those within the shell from which it's called.
+echo ^/sbin/pidof$
+
+# Web applications and data
+# As per GLEP 11: http://www.gentoo.org/proj/en/glep/glep-0011.html
+# Would like to make this more accurate.
+# Hopefully Gentoo will change to /srv/www someday to comply with FHS 2.3.
+echo ^/var/www$

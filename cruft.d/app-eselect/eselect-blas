@@ -1,0 +1,3 @@
+^/etc/env\.d/blas/lib[^/]*/config$
+^/usr/lib[^/]*/libblas\.(a|so|so\.0)$
+^/usr/lib[^/]*/pkgconfig/blas\.pc$

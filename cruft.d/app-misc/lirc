@@ -1,0 +1,2 @@
+^/var/run/lirc/lircd$
+^/var/run/lirc/lircd\.pid$

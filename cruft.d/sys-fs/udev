@@ -1,0 +1,5 @@
+^/etc/udev/hwdb\.bin$
+
+# ignore udev generated rule files
+# basicall only necessary with udev<197
+#^/etc/udev/rules\.d/.*persistent.*rules$

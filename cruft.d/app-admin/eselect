@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# binutils
+echo ^/etc/env\\.d/05binutils$
+echo ^/etc/env\\.d/binutils/config-`gcc -dumpmachine`$
+machine=`gcc -dumpmachine`
+ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/\1$/"
+ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/$machine-\1$/"
+ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/$machine\/bin\/\1$/"
+ls -1d /usr/lib/binutils/$machine/*/include/* | sed "s/.*\/\(.*\)/^\/usr\/include\/\1$/"
+
+# editor
+echo ^/etc/env\\.d/99editor$
+
+# kernel
+echo ^/usr/src/linux$
+
+# news
+echo ^/var/lib/gentoo/news$
+
+# pager
+echo ^/etc/env\\.d/99pager$
+
+# profile
+echo ^/etc/portage/make\\.profile$

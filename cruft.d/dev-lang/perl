@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# ignore generated perl header files
+echo ^`perl -e 'use Config; print $Config{installarchlib};'`/.*\\.ph$
+echo ^`perl -e 'use Config; print $Config{installsitearch};'`/.*\\.ph$
+
+# softlinks created during postinst
+ls -1d /usr/bin/*             | grep '\-perl\-' | sed "s/.*bin\/\([^-]*\).*/^\/usr\/bin\/\1$/"
+ls -1d /usr/share/man/man1/*  | grep '\-perl\-' | sed "s/.*man1\/\([^-]*\).*/^\/usr\/share\/man\/man1\/\1.1.bz2$/"
