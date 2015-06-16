@@ -1,3 +1,4 @@
+^/usr/bin/emacs$
 ^/usr/bin/emacsclient$
 ^/usr/bin/b2m$
 ^/usr/bin/ebrowse$
