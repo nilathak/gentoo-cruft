@@ -15,6 +15,8 @@ http://forums.gentoo.org/viewtopic-t-152618-postdays-0-postorder-asc-start-0.htm
 ====================================================================
 TODO
 - check-in on github, write ebuild, write gentoo forum post
+- provide git-based ebuild in gentoo-overlay (dependencies: gentoolkit, pylon, python3)
+- seperate pylon in own repo & provide git-based ebuild
 - any way to check obsolete dirs in /usr/portage/distfiles/egit-src/xvba-driver
 - document how ignore patterns can exclude non-portage files AND
   portage files (eg, mask unavoidable md5 check fails due to eselect)
@@ -54,6 +56,7 @@ TODO
 
 import copy
 import datetime
+import functools
 import hashlib
 import gentoolkit.equery.check
 import os
@@ -120,6 +123,7 @@ class cruft(base.base):
         getattr(self, self.__class__.__name__ + '_' + self.ui.args.op)()
         self.ui.ext_info(self.ui.args.op + ' took ' + str(datetime.datetime.now() - t1) + ' to complete...')
 
+    @functools.lru_cache(typed=True)
     def relevant_system_path(self, path):
         '''
         exclude paths which
@@ -128,6 +132,7 @@ class cruft(base.base):
         '''
         return not self.data['patterns']['single_regex'].match(path) and path.startswith(self.ui.args.path)
         
+    @functools.lru_cache(typed=True)
     def collect_ignore_patterns(self):
         self.ui.info('Collecting ignore patterns...')
 
@@ -195,6 +200,7 @@ class cruft(base.base):
         return {'map': re_map,
                 'single_regex': re_single_regex}
         
+    @functools.lru_cache(typed=True)
     def collect_portage_objects(self):
         if 'patterns' not in self.data: self.data['patterns'] = self.collect_ignore_patterns()
 
@@ -228,6 +234,7 @@ class cruft(base.base):
         
         return objects
 
+    @functools.lru_cache(typed=True)
     def collect_system_objects(self):
         if 'patterns' not in self.data: self.data['patterns'] = self.collect_ignore_patterns()
 
@@ -303,12 +310,16 @@ class cruft(base.base):
     def collect_cached_data(self):
         self.ui.debug('Collecting data and using cache when possible...')
         
-        cache = {}
         cache_path = os.path.join(cache_base_path, cache_base_name + '_' + self.ui.hostname)
+        dirty = False
         if os.access(cache_path, os.R_OK):
             with open(cache_path, 'rb') as cache_file:
                 self.ui.info('Loading cache {0}...'.format(cache_path))
-                cache = pickle.load(cache_file)
+                self.data = pickle.load(cache_file)
+
+        # determine portage dir state
+        # FIXME any configuration for db path available from portage module?
+        portage_state = hashlib.md5(str(os.stat('/var/db/pkg')).encode('utf-8')).hexdigest()
 
         # determine pattern dir state
         patterns_state = ''
@@ -316,36 +327,33 @@ class cruft(base.base):
             for f in files:
                 patterns_state = patterns_state + hashlib.md5(str(os.stat(os.path.join(root, f))).encode('utf-8')).hexdigest()
         patterns_state = hashlib.md5(patterns_state.encode('utf-8')).hexdigest()
-                
-        dirty = False
-        if ('patterns' not in cache or
-            'patterns_state' not in cache or
-            cache['patterns_state'] != patterns_state):
-            self.data['patterns'] = cache['patterns'] = self.collect_ignore_patterns()
-            cache['patterns_state'] = patterns_state
+        
+        if ('portage' not in self.data or
+            'portage_state' not in self.data or
+            self.data['portage_state'] != portage_state):
+            # portage changes can affect patterns (deriving patterns from portage API calls),
+            # thus collect portage first, which implicitely collects patterns.
+            self.data.pop('patterns', None)
+            self.data.pop('patterns_state', None)
+            self.data['portage'] = self.collect_portage_objects()
+            self.data['portage_state'] = portage_state
             dirty = True
         else:
-            self.ui.warning('No pattern file changes detected => restoring from cache...')
-            self.data['patterns'] = cache['patterns']
-           
-        # determine portage dir state
-        # FIXME any configuration for db path available from portage module?
-        portage_state = hashlib.md5(str(os.stat('/var/db/pkg')).encode('utf-8')).hexdigest()
-                
-        if ('portage' not in cache or
-            'portage_state' not in cache or
-            cache['portage_state'] != portage_state):
-            self.data['portage'] = cache['portage'] = self.collect_portage_objects()
-            cache['portage_state'] = portage_state
-            dirty = True
-        else:
-            self.ui.warning('No portage changes detected => restoring from cache...')
-            self.data['portage'] = cache['portage']
+            self.ui.warning('No portage changes detected => reusing cache...')
             
+        if ('patterns' not in self.data or
+            'patterns_state' not in self.data or
+            self.data['patterns_state'] != patterns_state):
+            self.data['patterns'] = self.collect_ignore_patterns()
+            self.data['patterns_state'] = patterns_state
+            dirty = True
+        else:
+            self.ui.warning('No pattern file changes detected => reusing cache...')
+           
         if dirty:
             with open(cache_path, 'wb') as cache_file:
                 self.ui.info('Storing cache...')
-                pickle.dump(cache, cache_file)
+                pickle.dump(self.data, cache_file)
 
     def cruft_report(self):
         '''
