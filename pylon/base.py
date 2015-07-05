@@ -50,26 +50,23 @@ class base(object):
     @property
     def ui_class(self):
         return self._ui_class
-
+    
     def __init__(self,
                  exc_class=script_error,
                  job_class=job,
                  ui_class=ui,
                  owner=None):
-        # save type of overriding classes
-        self._exc_class = exc_class
-        self._job_class = job_class
-        self._ui_class = ui_class
-        if owner:
-            self._exc_class = owner.exc_class
-            self._job_class = owner.job_class
+        self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
+        if self._owner:
+            self._exc_class = self._owner.exc_class
+            self._job_class = self._owner.job_class
 
             # always reuse the interface of a calling script
-            self._ui = owner.ui
+            self._ui = self._owner.ui
         else:
             # delay ui creation until now, so 'self' is defined for
             # 'owner' option of ui
-            self._ui = ui_class(self)
+            self._ui = self.ui_class(self)
         self._jobs = {}
 
     def dispatch(self, cmd, output='both', passive=False, blocking=True):

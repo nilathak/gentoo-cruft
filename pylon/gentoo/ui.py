@@ -7,7 +7,9 @@ provides a ui class which extends the pylon ui class.
 '''
 
 import argparse
+import datetime
 import email.mime.text
+import functools
 import io
 import logging
 import os
@@ -87,3 +89,14 @@ class ui(ui.ui):
             s.set_debuglevel(0)
             s.sendmail(m['From'], m['To'], m.as_string())
             s.quit()
+
+    # method decorator to explicitly log execution time
+    def log_exec_time(func):
+        # keep original attributes for decorated function (eg, __name__, __doc__, ...)
+        @functools.wraps(func)
+        def __wrapper(self, *args, **kwargs):
+            t1 = datetime.datetime.now()
+            ret = func(self, *args, **kwargs)
+            self.ui.info(func.__name__ + ' took ' + str(datetime.datetime.now() - t1) + ' to complete...')
+            return ret
+        return __wrapper

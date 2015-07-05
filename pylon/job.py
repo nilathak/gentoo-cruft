@@ -17,7 +17,6 @@ provides a job class which contains a generic wrapper for subprocess invocation.
 '''
 
 import os
-import pylon
 import subprocess
 import sys
 import threading
@@ -44,18 +43,13 @@ class job(object):
         return self._ui
 
     def __init__(self, ui, cmd, output='both', owner=None, passive=False, blocking=True):
-        self._blocking = blocking
-        self._cmd = cmd
+        self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
         self._exc_info = None
-        self._output = output
-        self._owner = owner
-        self._passive = passive
         self._threadname = threading.current_thread().name
         self._ret_val = None
         self._thread = threading.current_thread()
         if not blocking:
             self._thread = threading.Thread(target=self.exception_wrapper)
-        self._ui = ui
 
     def __call__(self):
 

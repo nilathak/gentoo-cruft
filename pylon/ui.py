@@ -32,7 +32,7 @@ class ui(object):
         return self._parser
 
     def __init__(self, owner):
-        self._owner = owner
+        self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
 
         # Logger
         ########################################

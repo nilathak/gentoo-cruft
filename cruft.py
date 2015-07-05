@@ -22,6 +22,7 @@ TODO
   portage files (eg, mask unavoidable md5 check fails due to eselect)
   option to list excluded portage files?
 - create a usecase for a pattern file with ">=asdf-version" in its name (see multislot useflag with grub)
+- md5 check is not performed if cache is loaded => save check state in cache and redo if state != option
 
 - add switch to report md5 fails even if they are ignored => former adm_config functionality
     def adm_config_md5(self):
@@ -54,8 +55,6 @@ TODO
 ====================================================================
 '''
 
-import copy
-import datetime
 import functools
 import hashlib
 import gentoolkit.equery.check
@@ -118,10 +117,8 @@ class cruft(base.base):
     __doc__ = sys.modules[__name__].__doc__
     
     def run_core(self):
-        t1 = datetime.datetime.now()
         self.data = {}
         getattr(self, self.__class__.__name__ + '_' + self.ui.args.op)()
-        self.ui.ext_info(self.ui.args.op + ' took ' + str(datetime.datetime.now() - t1) + ' to complete...')
 
     @functools.lru_cache(typed=True)
     def relevant_system_path(self, path):
@@ -187,12 +184,8 @@ class cruft(base.base):
                 except Exception:
                     self.ui.error('Skipped invalid expression in {1} ({0})'.format(regex,pattern_file))
                 else:
-                    if regex in re_map:
-                        # even if patterns are listed redundantly in one file, just add it once
-                        if pattern_file not in re_map[regex]:
-                            re_map[regex].append(pattern_file)
-                    else:
-                        re_map[regex] = [pattern_file]
+                    # even if patterns are listed redundantly in one file, just add it once
+                    re_map.setdefault(regex, []).append(pattern_file)
 
         self.ui.debug('Compiling all expressions into one long regex...')
         re_single_regex = re.compile('|'.join(re_map.keys()))
@@ -242,7 +235,7 @@ class cruft(base.base):
         objects = list()
         for root, dirs, files in os.walk(self.ui.args.path, followlinks=False, onerror=lambda x: self.ui.error(str(x))):
 
-            for d in copy.copy(dirs):
+            for d in list(dirs):
                 path = os.path.join(root, d)
 
                 # handle ignored directory symlinks as files
@@ -355,6 +348,7 @@ class cruft(base.base):
                 self.ui.info('Storing cache...')
                 pickle.dump(self.data, cache_file)
 
+    @ui.log_exec_time
     def cruft_report(self):
         '''
         identify potential cruft objects on your system
@@ -391,6 +385,7 @@ class cruft(base.base):
 
         self.ui.info('Cruft files ignored: {0}'.format(self.n_ignored))
 
+    @ui.log_exec_time
     def cruft_list(self):
         '''
         list ignore patterns and their origin + do some sanity checking
