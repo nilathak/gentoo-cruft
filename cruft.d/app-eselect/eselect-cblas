@@ -1,0 +1,4 @@
+^/etc/env\.d/cblas/lib[^/]*/config$
+^/usr/include/cblas\.h$
+^/usr/lib[^/]*/libcblas\.(a|so|so\.0)$
+^/usr/lib[^/]*/pkgconfig/cblas\.pc$
