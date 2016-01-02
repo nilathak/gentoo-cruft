@@ -4,10 +4,10 @@
 echo ^/etc/env\\.d/05binutils$
 echo ^/etc/env\\.d/binutils/config-`gcc -dumpmachine`$
 machine=`gcc -dumpmachine`
-ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/\1$/"
-ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/$machine-\1$/"
-ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/$machine\/bin\/\1$/"
-ls -1d /usr/lib/binutils/$machine/*/include/* | sed "s/.*\/\(.*\)/^\/usr\/include\/\1$/"
+ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/\1$/"  | sed 's/+/\\+/g'
+ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/$machine-\1$/"  | sed 's/+/\\+/g'
+ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/$machine\/bin\/\1$/"  | sed 's/+/\\+/g'
+ls -1d /usr/lib/binutils/$machine/*/include/* | sed "s/.*\/\(.*\)/^\/usr\/include\/\1$/"  | sed 's/+/\\+/g'
 
 # editor
 echo ^/etc/env\\.d/99editor$

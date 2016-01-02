@@ -5,4 +5,4 @@ echo ^/usr/sbin/fix_libtool_files\\.sh$
 echo ^/usr/share/gcc-data/fixlafiles\\.awk$
 
 # links created somewhere in postinst (according to timestamp)
-ls -1d /usr/`gcc -dumpmachine`/gcc-bin/*/* | sed 's/.*\/\(.*\)/^\/usr\/bin\/\1$/'
+ls -1d /usr/`gcc -dumpmachine`/gcc-bin/*/* | sed 's/.*\/\(.*\)/^\/usr\/bin\/\1$/' | sed 's/+/\\+/g'
