@@ -6,4 +6,4 @@
 ^/usr/include/CL/cl_gl_ext.h$
 ^/usr/include/CL/cl_platform.h$
 ^/usr/include/CL/opencl.h$
-^/usr/lib[^/]*/libOpenCL\.so(\.1)$
+^/usr/lib[^/]*/libOpenCL\.so(\.1)*$
