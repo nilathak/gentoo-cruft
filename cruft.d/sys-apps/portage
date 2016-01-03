@@ -40,6 +40,7 @@ portage_paths = [
     '/var/lib/portage/preserved_libs_registry',
     '/var/lib/portage/world_sets',
     '/var/log/emerge.log',
+    '/var/log/emerge-fetch.log',
     ]
 for p in portage_paths:
     regex = p
