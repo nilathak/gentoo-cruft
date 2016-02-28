@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ignore objects depending on kernel release
 kernel_r=`uname -r`

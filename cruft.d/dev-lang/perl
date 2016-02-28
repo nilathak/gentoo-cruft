@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ignore generated perl header files
 echo ^`perl -e 'use Config; print $Config{installarchlib};'`/.*\\.ph$

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # links created in /usr/portage/eclass/toolchain.eclass
 echo ^/usr/sbin/fix_libtool_files\\.sh$

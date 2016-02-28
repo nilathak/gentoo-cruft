@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # mysql system tables (installed by /usr/bin/mysql_install_db)
 echo ^/var/lib/mysql/mysql$

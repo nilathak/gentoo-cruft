@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo ^/etc/env\\.d/0\(4\|5\)gcc-`gcc -dumpmachine`$
 echo ^/etc/env\\.d/gcc/\\.NATIVE$
 echo ^/etc/env\\.d/gcc/config-`gcc -dumpmachine`$
