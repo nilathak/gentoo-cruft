@@ -9,6 +9,8 @@ provides fundamental classes to model the core control flow logic.
   - it provides a classmethod for flattening multidimensional lists
 '''
 
+import itertools
+import math
 import pylon.job as job
 import pylon.ui as ui
 import sys
@@ -127,3 +129,26 @@ class base(object):
                     yield sub
             else:
                 yield el
+
+    @staticmethod
+    def unique_logspace(data_points, interval_range):
+        exp = [x * math.log(interval_range)/data_points for x in range(0, data_points)]
+        logspace = [int(round(math.exp(x))) for x in exp]
+        for idx,val in enumerate(logspace):
+            if idx > 0:
+                if val <= new_val:
+                    new_val = new_val + 1
+                else:
+                    new_val = val
+            else:
+                new_val = val
+            yield new_val
+
+    @staticmethod
+    def chunk(n, iterable):
+        it = iter(iterable)
+        while True:
+            chunk = tuple(itertools.islice(it, n))
+            if not chunk:
+                return
+            yield chunk
