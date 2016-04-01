@@ -14,7 +14,8 @@ http://forums.gentoo.org/viewtopic-t-152618-postdays-0-postorder-asc-start-0.htm
 
 ====================================================================
 TODO
-- check-in on github, write ebuild, write gentoo forum post
+- how to exclude symlink without ignoring complete subtree? (eg, /usr/lib, /usr/local/lib)
+- write gentoo forum post
 - provide git-based ebuild in gentoo-overlay (dependencies: gentoolkit, pylon, python3)
 - seperate pylon in own repo & provide git-based ebuild
 - any way to check obsolete dirs in /usr/portage/distfiles/egit-src/xvba-driver
@@ -23,7 +24,6 @@ TODO
   option to list excluded portage files?
 - create a usecase for a pattern file with ">=asdf-version" in its name (see multislot useflag with grub)
 - md5 check is not performed if cache is loaded => save check state in cache and redo if state != option
-
 - add switch to report md5 fails even if they are ignored => former adm_config functionality
     def adm_config_md5(self):
         'check if portage md5 equals git-controlled file => can be removed from git'
