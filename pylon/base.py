@@ -132,6 +132,7 @@ class base(object):
 
     @staticmethod
     def unique_logspace(data_points, interval_range):
+        data_points = min(data_points, interval_range)
         exp = [x * math.log(interval_range)/data_points for x in range(0, data_points)]
         logspace = [int(round(math.exp(x))) for x in exp]
         for idx,val in enumerate(logspace):
