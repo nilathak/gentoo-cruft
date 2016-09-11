@@ -71,7 +71,7 @@ class base(object):
             self._ui = self.ui_class(self)
         self._jobs = {}
 
-    def dispatch(self, cmd, output='both', passive=False, blocking=True):
+    def dispatch(self, cmd, output='both', passive=False, blocking=True, **kwargs):
         'dispatch a job (see job class for details)'
 
         job = self.job_class(ui=self.ui,
@@ -79,7 +79,8 @@ class base(object):
                              output=output,
                              owner=self,
                              passive=passive,
-                             blocking=blocking)
+                             blocking=blocking,
+                             kwargs=kwargs)
         if not blocking:
             # always keep a valid thread dependency tree
             parent = threading.current_thread()

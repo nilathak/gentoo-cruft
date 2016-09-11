@@ -42,11 +42,12 @@ class job(object):
     def ui(self):
         return self._ui
 
-    def __init__(self, ui, cmd, output='both', owner=None, passive=False, blocking=True):
+    def __init__(self, ui, cmd, output='both', owner=None, passive=False, blocking=True, kwargs={}):
         self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
         self._exc_info = None
-        self._threadname = threading.current_thread().name
+        self._kwargs = kwargs
         self._ret_val = None
+        self._threadname = threading.current_thread().name
         self._thread = threading.current_thread()
         if not blocking:
             self._thread = threading.Thread(target=self.exception_wrapper)
@@ -78,7 +79,7 @@ class job(object):
 
             # python function?
             if hasattr(self._cmd, '__call__'):
-                self._ret_val = self._cmd()
+                self._ret_val = self._cmd(**self._kwargs)
 
             # no? then assume it's a string containing an external command invocation
             else:
@@ -93,7 +94,7 @@ class job(object):
                 raise e
         finally:
             # reset the logger format if only Mainthread will be left
-            if threading.active_count() <= 2:
+            if not self._blocking and threading.active_count() <= 2:
                 for h in self.ui.logger.handlers:
                     h.setFormatter(self.ui.formatter['default'])
 
