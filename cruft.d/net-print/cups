@@ -1,3 +1,4 @@
+^/etc/cups/printers\.conf.*$
 ^/etc/printcap$
 ^/var/cache/cups$
 ^/var/log/cups/access_log$

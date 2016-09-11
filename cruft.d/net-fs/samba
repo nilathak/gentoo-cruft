@@ -1,5 +1,6 @@
 ^/etc/samba/smb\.conf$
 ^/var/log/samba$
+^/var/nmbd$
 ^/var/cache/samba$
 ^/var/lib/samba$
 ^/var/spool/samba$
