@@ -1,3 +1,6 @@
+# ignore directory for multislot use flag as well
+^/boot/grub2?$
+
 #When you do not have a boot partition and /boot is a directory on
 #the / (root) partiton, the pathname to your kernel is /boot/kernel-...
 #and the root (hdx,y) statement points to your / (root) partition.
