@@ -1,1 +1,4 @@
 ^/var/lib/games/emacs$
+
+# MD5 will be modified by package installs
+^/usr/share/emacs/site-lisp/site-gentoo\.el$

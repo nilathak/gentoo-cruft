@@ -1,0 +1,2 @@
+# MD5 will be modified by package installs
+^/usr/lib[^/]*/gtk-.*/immodules\.cache$

@@ -1,0 +1,6 @@
+# collect all texlive related files which are modified during some eclass postprocessing (eg, texmf-update)
+^/etc/texmf$
+^/usr/share/texmf-dist$
+^/usr/share/texmf-site$
+^/usr/share/texmf$
+^/var/lib/texmf$

@@ -1,0 +1,2 @@
+# will be modified after adding unsupported scanner
+^/etc/sane\.d/dll\.conf$

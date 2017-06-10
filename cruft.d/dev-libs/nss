@@ -1,0 +1,12 @@
+# Altering these 3 libraries breaks the CHK verification.
+# All of the following cause it to break:
+# - stripping
+# - prelink
+# - ELF signing
+# http://www.mozilla.org/projects/security/pki/nss/tech-notes/tn6.html
+# Either we have to NOT strip them, or we have to forcibly resign after
+# stripping.
+#export NSS_CHK_SIGN_LIBS="freebl3 nssdbm3 softokn3"
+^/usr/lib[^/]*/libfreebl3\.chk$
+^/usr/lib[^/]*/libnssdbm3\.chk$
+^/usr/lib[^/]*/libsoftokn3\.chk$
