@@ -5,4 +5,5 @@
 ^/lib[^/]*/rc/cache/rc.log$
 ^/lib[^/]*/rc/cache/softlevel$
 ^/lib[^/]*/rc/console/$
+^/var/lib/misc/random-seed$
 ^/var/log/rc\.log$

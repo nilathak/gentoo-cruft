@@ -17,4 +17,4 @@ for root, dirs, files in os.walk(logrotate_dir):
     for f in files:
         parse_for_logs(os.path.join(root, f))
 
-print('^/var/lib/logrotate\.status$')
+print('^/var/lib/misc/logrotate\.status$')

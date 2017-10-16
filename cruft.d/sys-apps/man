@@ -1,2 +1,3 @@
 #!/usr/bin/env python
 print('^/var/cache/man$')
+print('^/usr/share/man/whatis$')
