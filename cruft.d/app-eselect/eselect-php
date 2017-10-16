@@ -1,5 +1,7 @@
+^/var/lib/eselect-php$
+
 # apache2
-^/usr/lib[^/]*/apache2/modules/libphp5\.so$
+^/usr/lib[^/]*/apache2/modules/mod_php\.so$
 
 # cli
 ^/usr/bin/php$

@@ -1,1 +1,2 @@
+^/etc/dhcpcd\.duid$
 ^/var/lib/dhcpcd/dhcpcd.*lease$

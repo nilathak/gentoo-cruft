@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-webapp-config --li | sed 's/.*\/\(.*\)/^\/var\/db\/webapps\/\1\/.*\/installs$/'
+webapp-config --list-installs | sed 's/.*\/\(.*\)/^\/var\/db\/webapps\/\1\/.*\/installs$/'

@@ -1,4 +1,6 @@
 ^/usr/share/bakefile/presets/wx\.bkl$
+^/usr/share/bakefile/presets/wx_presets\.py$
 ^/usr/share/bakefile/presets/wx_unix\.bkl$
 ^/usr/share/bakefile/presets/wx_win32\.bkl$
+^/usr/share/bakefile/presets/wx_xrc\.bkl$
 ^/var/lib/wxwidgets/current$

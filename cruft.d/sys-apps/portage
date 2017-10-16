@@ -28,6 +28,7 @@ for pkg in sorted(vartree.cpv_all()):
         print('^' + os.path.join(db_cache_dir, r) + '$')
 
 portage_paths = [
+    '/etc/csh.env',
     '/etc/portage/package.keywords/',
     '/etc/portage/package.mask/',
     '/etc/portage/package.unmask/',
