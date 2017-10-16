@@ -1,0 +1,2 @@
+^/usr/lib[^/]*/gconv/gconv-modules\.cache$
+^/usr/lib[^/]*/locale/locale-archive$

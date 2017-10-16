@@ -1,0 +1,3 @@
+^/usr/include/db\.h$
+^/usr/include/db_185\.h$
+^/usr/lib[^/]*/libdb(_cxx|_tcl|_java|_sql|_stl)?\.(a|so)$

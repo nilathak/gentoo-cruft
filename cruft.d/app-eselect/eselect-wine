@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+WINEPACK=`equery -q b /usr/bin/wine`
+WINEVER=`eselect --brief wine list | sed 's/wine\(.*\)/\1/'`
+equery f =$WINEPACK | grep '^/' | sed "s/$WINEVER//" | sed "s/\/wine\//\//" | sed 's/+/\\+/g' |  sed 's/\(.*\)/^\1(?:-d3d9|-staging)?$/' | sed 's/\(.*\)\(\.desktop\).*/\1(?:-d3d9|-staging)?\2$/'
+echo /usr/include/wine | sed 's/\(.*\)/^\1(?:-d3d9|-staging)?$/'
+echo ^/etc/eselect/wine$
