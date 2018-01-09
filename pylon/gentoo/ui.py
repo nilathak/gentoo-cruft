@@ -77,7 +77,7 @@ class ui(ui.ui):
             self._report_subject = self.args.op
 
     def cleanup(self):
-        'send optional email with all output to global message server'
+        'optionally send an email with all output to global message server'
         if (self.args.mail and
             not self.args.dry_run and
             len(self.report_stream.getvalue()) > 0):

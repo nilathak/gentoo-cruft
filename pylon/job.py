@@ -42,7 +42,7 @@ class job(object):
     def ui(self):
         return self._ui
 
-    def __init__(self, ui, cmd, output='both', owner=None, passive=False, blocking=True, kwargs={}):
+    def __init__(self, ui, cmd, output='both', owner=None, passive=False, blocking=True, daemon=False, **kwargs):
         self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
         self._exc_info = None
         self._kwargs = kwargs
@@ -50,7 +50,8 @@ class job(object):
         self._threadname = threading.current_thread().name
         self._thread = threading.current_thread()
         if not blocking:
-            self._thread = threading.Thread(target=self.exception_wrapper)
+            self._thread = threading.Thread(target=self.exception_wrapper,
+                                            daemon=self._daemon)
 
     def __call__(self):
 
@@ -61,9 +62,9 @@ class job(object):
             self.thread.start()
         return self
 
-    def join(self):
+    def join(self, **kwargs):
         'join back to caller thread'
-        self.thread.join()
+        self.thread.join(**kwargs)
 
     def exception_wrapper(self):
         try:
@@ -127,37 +128,31 @@ class job(object):
                 elif self._output == 'stderr':
                     stdout = devnull
 
-                # windows subprocess
-                if subprocess.mswindows:
-                    self.ui.error('Windows platform not supported!')
+                self._proc = subprocess.Popen(self._cmd, shell=True,
+                                              # always use bash
+                                              executable='/bin/bash',
+                                              stdin=None,
+                                              stdout=stdout,
+                                              stderr=stderr)
 
-                # POSIX subprocess
-                else:
-                    self._proc = subprocess.Popen(self._cmd, shell=True,
-                                                  # always use bash
-                                                  executable='/bin/bash',
-                                                  stdin=None,
-                                                  stdout=stdout,
-                                                  stderr=stderr)
+                while self._proc.poll() == None:
+                    (proc_stdout_b, proc_stderr_b) = self._proc.communicate(None)
 
-                    while self._proc.poll() == None:
-                        (proc_stdout_b, proc_stderr_b) = self._proc.communicate(None)
+                    if proc_stdout_b:
+                        proc_stdout = proc_stdout_b.decode().rstrip(os.linesep).rsplit(os.linesep)
+                        self.stdout.extend(proc_stdout)
+                        if (self._output and
+                            (self._output == 'both' or
+                             self._output == 'stdout')):
+                            [sys.stdout.write(self._prefix + l + os.linesep) for l in proc_stdout]
 
-                        if proc_stdout_b:
-                            proc_stdout = proc_stdout_b.decode().rstrip(os.linesep).rsplit(os.linesep)
-                            self.stdout.extend(proc_stdout)
-                            if (self._output and
-                                (self._output == 'both' or
-                                 self._output == 'stdout')):
-                                [sys.stdout.write(self._prefix + l + os.linesep) for l in proc_stdout]
-
-                        if proc_stderr_b:
-                            proc_stderr = proc_stderr_b.decode().rstrip(os.linesep).rsplit(os.linesep)
-                            self.stderr.extend(proc_stderr)
-                            if (self._output and
-                                (self._output == 'both' or
-                                 self._output == 'stderr')):
-                                [sys.stderr.write(self._prefix + l + os.linesep) for l in proc_stderr]
+                    if proc_stderr_b:
+                        proc_stderr = proc_stderr_b.decode().rstrip(os.linesep).rsplit(os.linesep)
+                        self.stderr.extend(proc_stderr)
+                        if (self._output and
+                            (self._output == 'both' or
+                             self._output == 'stderr')):
+                            [sys.stderr.write(self._prefix + l + os.linesep) for l in proc_stderr]
 
                 # can be caught anyway if a subprocess does not abide
                 # to standard error codes

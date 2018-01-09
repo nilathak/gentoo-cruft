@@ -71,16 +71,14 @@ class base(object):
             self._ui = self.ui_class(self)
         self._jobs = {}
 
-    def dispatch(self, cmd, output='both', passive=False, blocking=True, **kwargs):
+    def dispatch(self, cmd, blocking=True, **kwargs):
         'dispatch a job (see job class for details)'
 
         job = self.job_class(ui=self.ui,
-                             cmd=cmd,
-                             output=output,
                              owner=self,
-                             passive=passive,
+                             cmd=cmd,
                              blocking=blocking,
-                             kwargs=kwargs)
+                             **kwargs)
         if not blocking:
             # always keep a valid thread dependency tree
             parent = threading.current_thread()
@@ -90,7 +88,7 @@ class base(object):
 
         return job()
 
-    def join(self):
+    def join(self, **kwargs):
         'join all known child threads, perform cleanup of job lists'
         if len(self.jobs) > 0:
             parent = threading.current_thread()
@@ -98,7 +96,7 @@ class base(object):
             to_join = self.jobs[parent]
             while any(map(lambda x: x.thread.is_alive(), to_join)):
                 for j in to_join:
-                    j.join()
+                    j.join(**kwargs)
 
                 # find zombie parents (add children to current thread)
                 [self.jobs[parent].extend(v) for (k, v) in self.jobs.items() if not k.is_alive()]
