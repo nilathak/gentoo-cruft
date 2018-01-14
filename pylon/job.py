@@ -5,15 +5,14 @@ provides a job class which contains a generic wrapper for subprocess invocation.
 - allow forced execution of subprocess commands even during dry-run (passive=True)
 - it re-uses an existing ui class for logging if provided
 - it selects a different logger based on number of concurrent threads
-- it allows different handling of subprocess output
-  output
-      setting   | stdout            | stderr            | comments
-      --------------------------------------------------------------------
-      None      | pipe->var         | pipe->var         | var are the self.stdout and self.stderr variables
-      "stdout"  | pipe->var->stdout | null              |
-      "stderr"  | null              | pipe->var->stderr |
-      "both"    | pipe->var->stdout | pipe->var->stderr | default
-      "nopipes" | stdout            | stderr            | direct output without pipes (self.stdout/self.stderr remain empty)
+- it allows different handling of subprocess pipes (output option)
+    setting   | stdout            | stderr            | comments
+    --------------------------------------------------------------------
+    None      | pipe->var         | pipe->var         | var are the self.stdout and self.stderr variables
+    "stdout"  | pipe->var->stdout | null              |
+    "stderr"  | null              | pipe->var->stderr |
+    "both"    | pipe->var->stdout | pipe->var->stderr | default
+    "nopipes" | stdout            | stderr            | direct output without pipes (self.stdout/self.stderr remain empty)
 '''
 
 import os
@@ -71,7 +70,7 @@ class job(object):
 
             # assign meaningful output prefixes (use parent thread id for
             # blocking jobs)
-            if threading.active_count() == 1:
+            if len(self._owner.jobs) == 0:
                 self._prefix = ''
             else:
                 self._prefix = self.thread.name + ': '
@@ -95,18 +94,17 @@ class job(object):
                 raise e
         finally:
             # reset the logger format if only Mainthread will be left
-            if not self._blocking and threading.active_count() <= 2:
+            if not self._blocking and len(self._owner.jobs) <= 1:
                 for h in self.ui.logger.handlers:
                     h.setFormatter(self.ui.formatter['default'])
 
     def exec_cmd(self):
-        'do subprocess invocations on all supported architectures'
+        'execute subprocess on POSIX architectures'
         self.ui.debug(self._cmd)
         self._stdout = list()
         self._stderr = list()
         if not self.ui.args.dry_run or self._passive:
 
-            devnull = open(os.devnull, 'w')
             try:
 
                 # quiet switch takes precedence
@@ -124,41 +122,57 @@ class job(object):
                     stdout = None
                     stderr = None
                 elif self._output == 'stdout':
-                    stderr = devnull
+                    stderr = subprocess.DEVNULL
                 elif self._output == 'stderr':
-                    stdout = devnull
+                    stdout = subprocess.DEVNULL
 
                 self._proc = subprocess.Popen(self._cmd, shell=True,
+                                              bufsize=1,
                                               # always use bash
                                               executable='/bin/bash',
                                               stdin=None,
                                               stdout=stdout,
                                               stderr=stderr)
 
-                while self._proc.poll() == None:
-                    (proc_stdout_b, proc_stderr_b) = self._proc.communicate(None)
+                def reader(pipe, queue):
+                    try:
+                        with pipe:
+                            for line in iter(pipe.readline, b''):
+                                queue.put((pipe, line))
+                    finally:
+                        queue.put(None)
 
-                    if proc_stdout_b:
-                        proc_stdout = proc_stdout_b.decode().rstrip(os.linesep).rsplit(os.linesep)
-                        self.stdout.extend(proc_stdout)
-                        if (self._output and
-                            (self._output == 'both' or
-                             self._output == 'stdout')):
-                            [sys.stdout.write(self._prefix + l + os.linesep) for l in proc_stdout]
+                import queue
+                q = queue.Queue()
 
-                    if proc_stderr_b:
-                        proc_stderr = proc_stderr_b.decode().rstrip(os.linesep).rsplit(os.linesep)
-                        self.stderr.extend(proc_stderr)
-                        if (self._output and
-                            (self._output == 'both' or
-                             self._output == 'stderr')):
-                            [sys.stderr.write(self._prefix + l + os.linesep) for l in proc_stderr]
+                nr_of_readers = 0
+                if (self._output == 'both' or
+                    self._output == 'stdout'):
+                    nr_of_readers += 1
+                    threading.Thread(target=reader, daemon=True, args=(self._proc.stdout, q)).start()
+                if (self._output == 'both' or
+                    self._output == 'stderr'):
+                    nr_of_readers += 1
+                    threading.Thread(target=reader, daemon=True, args=(self._proc.stderr, q)).start()
+
+                for _ in range(nr_of_readers):
+                    for source, line in iter(q.get, None):
+                        l = line.decode()
+                        if source == self._proc.stdout:
+                            self.stdout.append(l.rstrip(os.linesep))
+                            if (self._output == 'both' or
+                                self._output == 'stdout'):
+                                sys.stdout.write(self._prefix + l)
+                        else:
+                            self.stderr.append(l.rstrip(os.linesep))
+                            if (self._output == 'both' or
+                                self._output == 'stderr'):
+                                sys.stderr.write(self._prefix + l)
 
                 # can be caught anyway if a subprocess does not abide
                 # to standard error codes
-                if self._proc.returncode != 0:
+                if self._proc.wait() != 0:
                     raise self._owner.exc_class('error executing "{0}"'.format(self._cmd), self)
 
             finally:
-                devnull.close()
                 self._ret_val = self._proc.returncode

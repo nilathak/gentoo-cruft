@@ -1,24 +1,23 @@
 '''
 provides a ui class which extends the pylon ui class.
 
-- a new logger for smtp mail reporting (default address: root@localhost)
+- a new logger for smtp mail reporting (default address: <user>@localhost)
 - member functions of base subclass using a naming scheme like <class>_<subparser>
   are automatically used for argparse subparser definition
 '''
 
 import argparse
-import datetime
 import email.mime.text
-import functools
+import getpass
 import io
 import logging
 import os
-import pylon.ui as ui
+import pylon.ui
 import re
 import smtplib
 import socket
 
-class ui(ui.ui):
+class ui(pylon.ui.ui):
 
     @property
     def fqdn(self):
@@ -39,11 +38,11 @@ class ui(ui.ui):
         self._handler['mail'].setFormatter(self.formatter['default'])
         self.logger.addHandler(self._handler['mail'])
 
-        # hooray, more emails (alias needs to be set)...
-        self._message_server = 'root@localhost'
+        # hooray, more emails (/etc/mail/aliases or ~/.forward needs to be set)...
+        self._message_server = getpass.getuser() + '@localhost'
 
         self.parser.add_argument('--mail', action='store_true',
-                                 help='generate additional mail report (def: root@localhost)')
+                                 help='generate additional mail report (def: <user>@localhost)')
 
         # when using operations:
         # - use self.parser_common from here on instead of self.parser
@@ -89,14 +88,3 @@ class ui(ui.ui):
             s.set_debuglevel(0)
             s.sendmail(m['From'], m['To'], m.as_string())
             s.quit()
-
-    # method decorator to explicitly log execution time
-    def log_exec_time(func):
-        # keep original attributes for decorated function (eg, __name__, __doc__, ...)
-        @functools.wraps(func)
-        def __wrapper(self, *args, **kwargs):
-            t1 = datetime.datetime.now()
-            ret = func(self, *args, **kwargs)
-            self.ui.info(func.__name__ + ' took ' + str(datetime.datetime.now() - t1) + ' to complete...')
-            return ret
-        return __wrapper

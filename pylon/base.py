@@ -1,38 +1,16 @@
 '''
 provides fundamental classes to model the core control flow logic.
 
-- a custom exception class for easier distinction of python and script errors
 - a base class which serves as parent for all shell scripting module classes
   - it calls overloaded stub functions using a ui class handle
   - it uses a job class to dispatch python functions or subprocess commands
   - it dispatches jobs non-blocking for multithreaded operation
-  - it provides a classmethod for flattening multidimensional lists
 '''
 
-import itertools
-import math
-import pylon.job as job
-import pylon.ui as ui
+import pylon.job
+import pylon.ui
 import sys
 import threading
-import types
-
-class script_error(Exception):
-    'provide our own exception class for easy identification'
-
-    @property
-    def msg(self):
-        return self._msg
-    @property
-    def owner(self):
-        return self._owner
-
-    def __init__(self, msg='No error info available', owner=None):
-        self._msg = msg
-        self._owner = owner
-
-    def __str__(self):
-        return self.msg
 
 class base(object):
     'common base for python scripts'
@@ -54,9 +32,9 @@ class base(object):
         return self._ui_class
     
     def __init__(self,
-                 exc_class=script_error,
-                 job_class=job,
-                 ui_class=ui,
+                 exc_class=pylon.script_error,
+                 job_class=pylon.job.job,
+                 ui_class=pylon.ui.ui,
                  owner=None):
         self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
         if self._owner:
@@ -82,10 +60,8 @@ class base(object):
         if not blocking:
             # always keep a valid thread dependency tree
             parent = threading.current_thread()
-            if parent not in self.jobs:
-                self.jobs[parent] = list()
-            self.jobs[parent].append(job)
-
+            self.jobs.setdefault(parent, list()).append(job)
+            
         return job()
 
     def join(self, **kwargs):
@@ -119,36 +95,3 @@ class base(object):
         self.ui.setup()
         self.run_core()
         self.ui.cleanup()
-
-    @classmethod
-    def flatten(cls, l):
-        for el in l:
-            if hasattr(el, '__iter__') and not isinstance(el, str):
-                for sub in cls.flatten(el):
-                    yield sub
-            else:
-                yield el
-
-    @staticmethod
-    def unique_logspace(data_points, interval_range):
-        data_points = min(data_points, interval_range)
-        exp = [x * math.log(interval_range)/data_points for x in range(0, data_points)]
-        logspace = [int(round(math.exp(x))) for x in exp]
-        for idx,val in enumerate(logspace):
-            if idx > 0:
-                if val <= new_val:
-                    new_val = new_val + 1
-                else:
-                    new_val = val
-            else:
-                new_val = val
-            yield new_val
-
-    @staticmethod
-    def chunk(n, iterable):
-        it = iter(iterable)
-        while True:
-            chunk = tuple(itertools.islice(it, n))
-            if not chunk:
-                return
-            yield chunk
