@@ -2,8 +2,8 @@
 
 # ignore objects depending on kernel release
 kernel_r=`uname -r`
-echo ^/boot/config{,\.old,-$kernel_r}$
-echo ^/boot/vmlinuz{,\.old,-$kernel_r}$
-echo ^/boot/System.map{,\.old,-$kernel_r}$
+echo ^/boot/config\(-$kernel_r\)\?\(\\.old\)?$
+echo ^/boot/vmlinuz\(-$kernel_r\)\?\(\\.old\)?$
+echo ^/boot/System.map\(-$kernel_r\)\?\(\\.old\)?$
 echo ^/lib[^/]*/modules/$kernel_r$
 echo ^/usr/src/linux-$kernel_r$

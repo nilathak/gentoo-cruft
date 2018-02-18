@@ -35,7 +35,6 @@ portage_paths = [
     '/etc/portage/package.unmask/',
     '/etc/portage/package.use/',
     '/etc/portage/repos.conf/',
-    '/etc/portage/repos.conf/gentoo.conf',
     '/etc/profile.env',
     '/var/lib/module-rebuild/moduledb',
     '/var/lib/portage/config',
