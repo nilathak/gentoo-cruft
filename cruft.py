@@ -5,12 +5,12 @@ Inspired by ecatmur's cruft script:
 http://forums.gentoo.org/viewtopic-t-152618-postdays-0-postorder-asc-start-0.html
 
 - Ignore syntax
-  ^/path/single_file$
-  ^/path/single_dir/$
-  ^/path/subtree$
+    ^/path/single_file$
+    ^/path/single_dir/$
+    ^/path/subtree$
 
 - pattern/portage data is cached, system tree is always scanned.
-  restrict system tree with -p option for faster debugging
+    restrict system tree with -p option for faster debugging
 
 ====================================================================
 TODO
@@ -18,53 +18,24 @@ TODO
 - write gentoo forum post
 - provide git-based ebuild in gentoo-overlay (dependencies: gentoolkit, pylon, python3)
 - seperate pylon in own repo & provide git-based ebuild
-- any way to check obsolete dirs in /usr/portage/distfiles/egit-src/xvba-driver
 - document how ignore patterns can exclude non-portage files AND
-  portage files (eg, mask unavoidable md5 check fails due to eselect)
-  option to list excluded portage files?
-- create a usecase for a pattern file with ">=asdf-version" in its name (see multislot useflag with grub)
-- md5 check is not performed if cache is loaded => save check state in cache and redo if state != option
-- add switch to report md5 fails even if they are ignored => former adm_config functionality
-    def adm_config_md5(self):
-        'check if portage md5 equals git-controlled file => can be removed from git'
-
-        # generate custom portage object/pkg map once
-        import cruft
-        import re
-        objects = {}
-        pkg_map = {}
-        pkg_err = {}
-
-        for pkg in sorted(cruft.vardb.cpv_all()):
-            contents = cruft.vardb._dblink(pkg).getcontents()
-            pkg_map.update(dict.fromkeys(contents.keys(), pkg))
-            objects.update(contents)
-     
-        repo_files = self.list_repo()
-        portage_controlled = set(objects.keys()) & set(repo_files)
-     
-        # openrc installs user version => MD5 sum always equal (look into ebuild)
-        # /etc/conf.d/hostname (sys-apps/openrc-0.11.8)
-        for f in portage_controlled:
-            (n_passed, n_checked, errs) = cruft.contents_checker._run_checks(cruft.vardb._dblink(pkg_map[f]).getcontents())
-            if not [e for e in errs if re.search(f + '.*MD5', e)]:
-                self.ui.warning('=MD5 {0} ({1})'.format(f, pkg_map[f]))
-            else:
-                self.ui.debug('!MD5 {0} ({1})'.format(f, pkg_map[f]))
+    portage files (eg, mask unavoidable md5 check fails due to eselect)
+    option to list excluded portage files?
+- create a usecase for a pattern file with ">=asdf-version" in its name
         
 ====================================================================
 '''
-
 import functools
 import hashlib
 import gentoolkit.equery.check
+import gentoolkit.helpers
 import os
 import pickle
 import portage
 import pprint
-import pylon.base as base
-import pylon.gentoo.job as job
-import pylon.gentoo.ui as ui
+import pylon.base
+import pylon.gentoo.job
+import pylon.gentoo.ui
 import re
 import sys
 import time
@@ -73,11 +44,12 @@ cache_base_path = '/tmp'
 cache_base_name = 'cruft_cache'
 comment_char = '#'
 default_pattern_root = '/usr/bin/cruft.d'
-contents_checker = gentoolkit.equery.check.VerifyContents()
+
+gtk_check = gentoolkit.equery.check.VerifyContents()
+gtk_find = gentoolkit.helpers.FileOwner()
 
 # assume standard portage tree locatation at /
 trees = portage.create_trees()
-portdb = trees['/']["porttree"].dbapi
 vardb = trees['/']["vartree"].dbapi
 
 # portage vartree dict indices
@@ -88,7 +60,7 @@ po_digest = 2
 # cruft dict indices
 co_date = 0
 
-class ui(ui.ui):
+class ui(pylon.gentoo.ui.ui):
     def __init__(self, owner):
         super().__init__(owner)
         self.parser_common.add_argument('-i', '--pattern_root',
@@ -102,22 +74,20 @@ class ui(ui.ui):
                                         help='check only specific path for cruft')
         self.parser_report.add_argument('-f', '--format', choices=('path', 'date', 'rm_chain'),
                                         default='path',
-                                        help='\
-                                        //date// report cruft objects sorted by modification date,\
-                                        //path// report cruft objects sorted by object path (default),\
-                                        //rm_chain// report cruft objects as chained rm commands')
+                                        help='date: report cruft objects sorted by modification date,\
+                                        path: report cruft objects sorted by object path (default),\
+                                        rm_chain: report cruft objects as chained rm commands')
         
     def setup(self):
         super().setup()
         if not self.args.op:
             raise self.owner.exc_class('Specify at least one subcommand operation')
         
-class cruft(base.base):
-
+class cruft(pylon.base.base):
     __doc__ = sys.modules[__name__].__doc__
     
     def run_core(self):
-        self.data = {}
+        self.data = dict()
         getattr(self, self.__class__.__name__ + '_' + self.ui.args.op)()
 
     @functools.lru_cache(typed=True)
@@ -140,6 +110,10 @@ class cruft(base.base):
                 if not dirs:
                     # check if any version of the package is installed
                     pkg = os.path.join(os.path.basename(root), f)
+                    # working examples:
+                    # vardb.match('net-p2p/go-ethereum')
+                    # vardb.match('net-p2p/go-ethereum-1.5.5')
+                    # vardb.match('net-p2p/go-ethereum[opencl]')
                     if not vardb.match(pkg):
                         self.ui.ext_info('Not installed: ' + pkg)
                         continue
@@ -175,7 +149,7 @@ class cruft(base.base):
             # - interpret spaces as delimiter for multiple patterns
             #   on one line. needed for automatic bash expansion by
             #   {}. however this breaks ignore patterns with spaces!
-            re_list_of_file = self.flatten([x.rstrip(os.linesep).strip().split() for x in re_list_raw])
+            re_list_of_file = pylon.flatten(x.rstrip(os.linesep).strip().split() for x in re_list_raw)
 
             # pattern sanity checks, to facilitate pattern file debugging
             for regex in re_list_of_file:
@@ -185,7 +159,7 @@ class cruft(base.base):
                     self.ui.error('Skipped invalid expression in {1} ({0})'.format(regex,pattern_file))
                 else:
                     # even if patterns are listed redundantly in one file, just add it once
-                    re_map.setdefault(regex, []).append(pattern_file)
+                    re_map.setdefault(regex, list()).append(pattern_file)
 
         self.ui.debug('Compiling all expressions into one long regex...')
         re_single_regex = re.compile('|'.join(re_map.keys()))
@@ -198,34 +172,24 @@ class cruft(base.base):
         if 'patterns' not in self.data: self.data['patterns'] = self.collect_ignore_patterns()
 
         self.ui.info('Collecting objects managed by portage...')
-        objects = {}
-        if self.ui.args.check:
-            self.ui.info('Checking package sanity using gentoolkit...')
+        objects = list()
         for pkg in sorted(vardb.cpv_all()):
             contents = vardb._dblink(pkg).getcontents()
-            if self.ui.args.check:
-
-                # iterate one contents item at a time to allow easy mapping of error <-> object path
-                for k, v in contents.items():
-                    if self.relevant_system_path(k):
-                        (n_passed, n_checked, errs) = contents_checker._run_checks({k:v})
-                        for e in errs:
-                            self.ui.error(pkg + ': ' + e)
 
             # add trailing slashes to directories for easier regex matching
-            objects_slashes = {}
             for k, v in contents.items():
-                if contents[k][po_type] == 'dir':
-                    objects_slashes[k + '/'] = v
+                if v[po_type] == 'dir':
+                    objects.append(k + '/')
                 else:
-                    objects_slashes[k] = v
+                    objects.append(k)
                 
-            # just flatten out the dirname part to avoid tinkering with symlinks introduced by portage itself
-            for k, v in objects_slashes.items():
-                objects[os.path.join(os.path.realpath(os.path.dirname(k)),
-                                     os.path.basename(k))] = v
-        
-        return objects
+        # just flatten out the dirname part to avoid tinkering with symlinks introduced by portage itself.
+        # after this step it doesn't make sense to store values from contents dict with new keys
+        objects = (os.path.join(os.path.realpath(os.path.dirname(x)),
+                                os.path.basename(x)) for x in objects)
+
+        # uniquify after softlink elimination
+        return list(set(objects))
 
     @functools.lru_cache(typed=True)
     def collect_system_objects(self):
@@ -269,30 +233,114 @@ class cruft(base.base):
         if 'portage' not in self.data: self.data['portage'] = self.collect_portage_objects()
         if 'system' not in self.data: self.data['system'] = self.collect_system_objects()
 
-        self.ui.info('Identifying system/portage mismatch...')
+        self.ui.info('Identifying missing portage objects...')
         self.ui.debug('Generating difference set (portage - system)...')
-        mismatch = list(set(self.data['portage'].keys()) - set(self.data['system']))
-        for path in sorted(mismatch):
+        missing = list(set(self.data['portage']) - set(self.data['system']))
+        missing.sort()
+        for path in missing:
             if not os.path.exists(path) and self.relevant_system_path(path):
                 self.ui.error('Portage object missing on system: ' + path)
 
+        # FIXME trial 
+        if self.ui.args.check:
+            self.ui.info('Checking package sanity using gentoolkit...')
+
+            self.ui.debug('Generating intersection set (system & portage)...')
+            relevant_portage = list(set(self.data['system']) & set(self.data['portage']))
+
+            self.ui.debug('Applying ignore patterns on (system & portage)...')
+            to_check = [path for path in relevant_portage if not self.data['patterns']['single_regex'].match(path)]
+
+            #bla = vardb._owners.get_owners(['/etc/conf.d/xdm','/etc/env.d/gcc/x86_64-pc-linux-gnu-6.3.0'])
+            #for b in bla:
+            #    print(b.mycpv)
+            
+            contents = dict()
+            for pkg in sorted(vardb.cpv_all()):
+                contents.update(vardb._dblink(pkg).getcontents())
+            #contents_to_check = {k:v for k,v in contents.items() if k in to_check}
+            (n_passed, n_checked, errs) = gtk_check._run_checks(contents)
+            for err in errs:
+                affected_file = err.split()[0]
+                affected_pkg = list(map(lambda x: x.mycpv, vardb._owners.get_owners(list(affected_file))))
+                self.ui.error(affected_pkg[0] + ': ' + err)
+            
+            #for pkg in sorted(vardb.cpv_all()):
+            #    contents = vardb._dblink(pkg).getcontents()
+            #    
+            #    #contents_to_check = {k:v for k,v in contents.items() if k in to_check}
+            #    (n_passed, n_checked, errs) = gtk_check._run_checks(contents)
+            #    for e in errs:
+            #        self.ui.error(pkg + ': ' + e)
+                
+            #check_errors = gtk_check._run_checks(to_check)[2]
+            #if check_errors:
+            #    affected_files = map(lambda x: x.split()[0], check_errors)
+            #    affected_pkgs = map(lambda x: str(x[0]), gtk_find(affected_files))
+            # 
+            #    for e, pkg in zip(check_errors, affected_pkgs):
+            #        self.ui.error(pkg + ': ' + e)
+            
+            #for error in gtk_check._run_checks(to_check)[2]:
+            #    affected_file = error.split()[0]
+            #    self.ui.error(str(gtk_find(list(affected_file))[0][0]) + ': ' + e)
+            #    
+            # 
+            #for (n_passed, n_checked, errs) in gtk_check._run_checks(to_check):
+            #    if err
+            # 
+            #check_errs = {k: errs for k,v in if gtk_check._run_checks(check)[2]}
+            # 
+            #for k, v in check_dict.items():
+            #    (n_passed, n_checked, errs) = gtk_check._run_checks({k:v})
+            #    for e in errs:
+            #        self.ui.error(str(gtk_find((k))[0][0]) + ': ' + e)
+
+            #for pkg in sorted(vardb.cpv_all()):
+            #    contents = vardb._dblink(pkg).getcontents()
+            #    
+            #    # iterate one item at a time to allow easy mapping of error <-> object path
+            #    for k, v in contents.items():
+            #        if (v[po_type] != 'dir' and
+            #            k in to_check):
+            #            (n_passed, n_checked, errs) = contents_checker._run_checks({k:v})
+            #            for e in errs:
+            #                self.ui.error(pkg + ': ' + e)
+            #if self.ui.args.check:
+            # 
+            #    # iterate one contents item at a time to allow easy mapping of error <-> object path
+            #    for k, v in contents.items():
+            #        if self.relevant_system_path(k):
+            #            (n_passed, n_checked, errs) = contents_checker._run_checks({k:v})
+            #            for e in errs:
+            #                self.ui.error(pkg + ': ' + e)
+            
         self.ui.info('Identifying cruft...')
         self.ui.debug('Generating difference set (system - portage)...')
-        cruft = list(set(self.data['system']) - set(self.data['portage'].keys()))
+        # FIXME
+        cruft = set(self.data['system']) - set(self.data['portage'])
+        #cruft = list(set(self.data['system']) - set(self.data['portage']))
 
-        self.ui.debug('Applying ignore patterns...')
+        self.ui.debug('Applying ignore patterns on (system - portage)...')
         remaining = [path for path in cruft if not self.data['patterns']['single_regex'].match(path)]
 
         self.ui.debug('Removing parent directories of already ignored paths...')
         ignored = list(set(cruft) - set(remaining))
+
+        # FIXME
+        #remaining = [r for r in remaining for i in ignored if not i.startswith(r) or r[-1] != '/']
+        #remaining = [x for path in ignored for x in list(remaining) if not path.startswith(x) or x[-1] != '/']
+        #print(remaining)
         for path in ignored:
-            remaining = list(filter(lambda x: not path.startswith(x) or x[-1] != '/', remaining))
+            remaining = [x for x in remaining if not path.startswith(x) or x[-1] != '/']
+        #    #remaining = list(filter(lambda x: not path.startswith(x) or x[-1] != '/', remaining))
         
         self.n_ignored = len(cruft) - len(remaining)
 
         # add a date info to the remaining objects
-        cruft = {}
-        for path in sorted(remaining):
+        cruft = dict()
+        remaining.sort()
+        for path in remaining:
             try:
                 cruft[path] = [time.localtime(os.lstat(path).st_mtime)]
             except OSError:
@@ -318,12 +366,13 @@ class cruft(base.base):
         patterns_state = ''
         for root, dirs, files in os.walk(self.ui.args.pattern_root):
             for f in files:
-                patterns_state = patterns_state + hashlib.md5(str(os.stat(os.path.join(root, f))).encode('utf-8')).hexdigest()
+                patterns_state += hashlib.md5(str(os.stat(os.path.join(root, f))).encode('utf-8')).hexdigest()
         patterns_state = hashlib.md5(patterns_state.encode('utf-8')).hexdigest()
         
         if ('portage' not in self.data or
             'portage_state' not in self.data or
             self.data['portage_state'] != portage_state):
+          
             # portage changes can affect patterns (deriving patterns from portage API calls),
             # thus collect portage first, which implicitely collects patterns.
             self.data.pop('patterns', None)
@@ -337,6 +386,7 @@ class cruft(base.base):
         if ('patterns' not in self.data or
             'patterns_state' not in self.data or
             self.data['patterns_state'] != patterns_state):
+          
             self.data['patterns'] = self.collect_ignore_patterns()
             self.data['patterns_state'] = patterns_state
             dirty = True
@@ -348,7 +398,7 @@ class cruft(base.base):
                 self.ui.info('Storing cache...')
                 pickle.dump(self.data, cache_file)
 
-    @ui.log_exec_time
+    @pylon.log_exec_time
     def cruft_report(self):
         '''
         identify potential cruft objects on your system
@@ -385,13 +435,13 @@ class cruft(base.base):
 
         self.ui.info('Cruft files ignored: {0}'.format(self.n_ignored))
 
-    @ui.log_exec_time
+    @pylon.log_exec_time
     def cruft_list(self):
         '''
         list ignore patterns and their origin + do some sanity checking
         '''
         
-        # FIXME makes only sense on root folder, do not use -p from "report" operation
+        # re-using functions from report op requires sane args defaults
         self.ui.args.check = False
         self.ui.args.path = '/'
 
@@ -409,7 +459,7 @@ class cruft(base.base):
         for k,v in sorted(self.data['patterns']['map'].items()):
             matched = False
             pattern = re.compile(k)
-            for path in self.data['portage'].keys():
+            for path in self.data['portage']:
                 if pattern.match(path):
                     matched = True
                     break
@@ -428,7 +478,7 @@ class cruft(base.base):
                 pprint.pprint({k:v})
                 
 if __name__ == '__main__':
-    app = cruft(job_class=job.job,
+    app = cruft(job_class=pylon.gentoo.job.job,
                 ui_class=ui)
     app.run()
     #import cProfile
