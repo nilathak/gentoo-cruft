@@ -3,5 +3,4 @@
 ^/etc/ssl/dovecot/server\.key$
 ^/etc/ssl/dovecot/server\.pem$
 ^/var/lib/dovecot/instances$
-^/var/lib/dovecot/mounts$
-^/var/lib/dovecot/ssl-parameters\.dat$
+^/etc/dovecot/dh\.pem$
