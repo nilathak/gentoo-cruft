@@ -1,1 +1,0 @@
-^/usr/lib[^/]*/dri/(i915|i965|r300|r600|swrast)_dri\.so$                        

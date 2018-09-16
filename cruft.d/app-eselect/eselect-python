@@ -1,5 +1,2 @@
-^/etc/env\.d/python/config$
-^/usr/bin/2to3$
-^/usr/bin/pydoc$
-^/usr/bin/python(2|3|-config)?$
+^/etc/python-exec/python-exec\.conf$
 ^/usr/share/man/man1/python\.1\.bz2$
