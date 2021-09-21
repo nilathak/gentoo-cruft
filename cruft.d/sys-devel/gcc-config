@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-echo ^/etc/env\\.d/0\(4\|5\)gcc-`gcc -dumpmachine`$
+machine=`gcc -dumpmachine`
+echo ^/etc/env\\.d/0\(4\|5\)gcc-$machine$
 echo ^/etc/env\\.d/gcc/\\.NATIVE$
-echo ^/etc/env\\.d/gcc/config-`gcc -dumpmachine`$
-echo ^/etc/ld\\.so\\.conf\\.d/05gcc-`gcc -dumpmachine`\\.conf$
+echo ^/etc/env\\.d/gcc/config-$machine$
+echo ^/etc/ld\\.so\\.conf\\.d/05gcc-$machine\\.conf$
+echo ^/lib/cpp$ # If a C preprocessor is installed, /lib/cpp must be a reference to it, for historical reasons.
+echo ^/usr/bin/$machine-gcov-dump$
+echo ^/usr/bin/$machine-gcov-tool$
+echo ^/usr/$machine/binutils-bin/lib/bfd-plugins/liblto_plugin\\.so$

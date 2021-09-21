@@ -1,0 +1,7 @@
+^/sbin/ip6tables$
+^/sbin/ip6tables-restore$
+^/sbin/ip6tables-save$
+^/sbin/iptables$
+^/sbin/iptables-restore$
+^/sbin/iptables-save$
+^/sbin/iptables-xml$

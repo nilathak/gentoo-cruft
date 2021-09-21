@@ -10,7 +10,7 @@ def parse_for_logs(f):
         if l.find('{') != -1:
             for logf in l.rstrip('{').split():
                 if os.path.exists(logf):
-                    print('^' + logf.replace('.', '\.') + '-[0-9]*\.gz$')
+                    print('^' + logf.replace('.', '\.') + '-[0-9]*(\.gz)?$')
 
 parse_for_logs(logrotate_conf)
 for root, dirs, files in os.walk(logrotate_dir):

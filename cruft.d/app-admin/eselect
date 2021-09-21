@@ -7,7 +7,7 @@ machine=`gcc -dumpmachine`
 ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/\1$/"  | sed 's/+/\\+/g'
 ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/bin\/$machine-\1$/"  | sed 's/+/\\+/g'
 ls -1  /usr/$machine/binutils-bin/*/*         | sed "s/.*\/\(.*\)/^\/usr\/$machine\/bin\/\1$/"  | sed 's/+/\\+/g'
-ls -1d /usr/lib/binutils/$machine/*/include/* | sed "s/.*\/\(.*\)/^\/usr\/include\/\1$/"  | sed 's/+/\\+/g'
+echo ^/usr/$machine/lib/ldscripts$
 
 # editor
 echo ^/etc/env\\.d/99editor$

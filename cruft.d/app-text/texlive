@@ -3,4 +3,3 @@
 ^/usr/share/texmf-dist$
 ^/usr/share/texmf-site$
 ^/usr/share/texmf$
-^/var/lib/texmf$

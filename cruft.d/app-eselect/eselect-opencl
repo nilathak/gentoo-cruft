@@ -1,3 +1,0 @@
-^/etc/env\.d/03opencl$
-^/usr/include/CL/cl.hpp$
-^/usr/lib[^/]*/libOpenCL\.so(\.1)*$

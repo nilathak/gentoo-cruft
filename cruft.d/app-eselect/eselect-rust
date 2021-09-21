@@ -1,5 +1,12 @@
-^/etc/env.d/rust/last-set$
-^/usr/bin/rust-gdb$
-^/usr/bin/rust-lldb$
+^/etc/env\.d/rust/last-set$
+^/usr/bin/cargo$
 ^/usr/bin/rustc$
 ^/usr/bin/rustdoc$
+^/usr/bin/rust-gdb$
+^/usr/bin/rust-gdbgui$
+^/usr/bin/rust-lldb$
+^/usr/lib/rust/lib$
+^/usr/lib/rust/libexec$
+^/usr/lib/rust/man$
+^/usr/lib/rustlib$
+^/usr/share/doc/rust$

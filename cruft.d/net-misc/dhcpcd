@@ -1,3 +1,4 @@
 ^/var/lib/dhcpcd/duid$
 ^/var/lib/dhcpcd/.*lease$
+^/var/lib/dhcpcd/.*lease6$
 ^/var/lib/dhcpcd/secret$
