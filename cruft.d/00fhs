@@ -54,7 +54,6 @@
  
 # Essential shared libraries and kernel modules
 ^/lib[^/]*/$
-^/lib[^/]*/cpp$            # If a C preprocessor is installed, /lib/cpp must be a reference to it, for historical reasons.
 #^/lib[^/]*/libc\.so\..*$   # The dynamically-linked C library (optional)
 #^/lib[^/]*/ld.*$		    # The execution time linker/loader (optional)
 #^/lib[^/]*/modules/$	    # Loadable kernel modules (optional)
