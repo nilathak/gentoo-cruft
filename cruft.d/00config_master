@@ -1,0 +1,31 @@
+# same for every host
+^/etc/conf\.d/consolefont$
+^/etc/conf\.d/keymaps$
+^/etc/conf\.d/ntpd$
+^/etc/env\.d/02locale$
+^/etc/locale\.gen$
+^/etc/mail/aliases$
+^/etc/postfix/main\.cf$
+^/etc/syslog-ng/syslog-ng\.conf$
+^/root/\.gitconfig$
+^/root/\.ssh/authorized_keys$
+^/usr/bin/admin\.py$
+^/usr/bin/backup\.py$
+
+# FIXME new dhcpcd version does not push hostname by default
+^/etc/dhcpcd\.conf$
+
+# different for every host
+^/etc/conf\.d/hostname
+^/etc/conf\.d/net$
+^/etc/default/grub$
+^/etc/fstab$
+^/etc/portage/make\.conf$
+^/etc/portage/package\.accept_keywords/all$
+^/etc/portage/package\.mask/all$
+^/etc/portage/package\.unmask/all$
+^/etc/portage/package\.use/all$
+^/var/lib/portage/world$
+
+# enable interactive mode, keep generic otherwise
+^/etc/rc\.conf$
