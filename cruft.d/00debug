@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# host-specific repo
-echo ^/\.git$
-cd / && git ls-files | sed 's/\(.*\)/\/\1/' | sed 's/[^\/]*\(\/.*\)/\1/' | sed 's/\(\/.*\)/\1/' | sed 's/\+/\\+/g' | sed 's/\./\\./g' | sed 's/\(.*\)/^\1$/'
-
 # cruft/pylon repo
 echo ^/usr/bin/\.git$
 cd /usr/bin && git ls-files | sed 's/\(.*\)/\/usr\/bin\/\1/' | sed 's/[^\/]*\(\/.*\)/\1/' | sed 's/\(\/.*\)/\1/' | sed 's/\+/\\+/g' | sed 's/\./\\./g' | sed 's/\(.*\)/^\1$/'
@@ -35,17 +31,20 @@ echo ^/usr/share/config/kdm/kdmrc$
 # - .keep files are cruft if .keep_xyz files are provided by package (ie. cron.daily)
 echo .*/\\.keep$
 
+# FIXME gentoo repo for github
+echo ^/var/db/repos/fork$
+
 # FIXME search for matching pyc & py in ALL folders, not just PYTHONPATH
 # this also results in huge exclusion list from sanity check -> verify this
 echo .*\\.pyc$
 echo .*\\.pyo$
-# add __pycache__ pattern to ignore python3 bytecode dirs
+# add __pycache__ pattern to ignore python3 bytecode dirs (python 3.8 allows to redirect these files with PYTHONPYCACHEPREFIX)
 echo .*/__pycache__$
 
 # brother printer driver
 echo ^/usr/local/Brother/filter/$
 echo ^/usr/libexec/cups/filter/brlpdwrapperMFC7820N$
-echo ^/usr/share/cups/model/MFC7820N.ppd$
+echo ^/usr/share/cups/model/MFC7820N\\.ppd$
 
 # FIXME assign to some package, this is not covered by FHS 2.3
 # Virtual filesystem documenting kernel and process status as text files, e.g., uptime, network.
@@ -58,7 +57,34 @@ echo ^/etc/localtime$
 
 # the softlinks in this dir are not removed when a service is unemerged.
 # neither do they belong to the service. how to clean up broken softlinks?
-echo ^/etc/runlevels$
+#echo ^/etc/runlevels$
+echo ^/etc/runlevels/boot/consolefont$
+echo ^/etc/runlevels/boot/cronie$
+echo ^/etc/runlevels/boot/elogind$
+echo ^/etc/runlevels/boot/net.lo$
+echo ^/etc/runlevels/boot/numlock$
+echo ^/etc/runlevels/boot/opentmpfiles-setup$
+echo ^/etc/runlevels/boot/syslog-ng$
+echo ^/etc/runlevels/default/alsasound$
+echo ^/etc/runlevels/default/apache2$
+echo ^/etc/runlevels/default/bluetooth$
+echo ^/etc/runlevels/default/cupsd$
+echo ^/etc/runlevels/default/dbus$
+echo ^/etc/runlevels/default/dnsmasq$
+echo ^/etc/runlevels/default/dovecot$
+echo ^/etc/runlevels/default/hostapd$
+echo ^/etc/runlevels/default/iptables$
+echo ^/etc/runlevels/default/net.eth0$
+echo ^/etc/runlevels/default/net.eth1$
+echo ^/etc/runlevels/default/net.wlan1$
+echo ^/etc/runlevels/default/ntpd$
+echo ^/etc/runlevels/default/openvpn$
+echo ^/etc/runlevels/default/postfix$
+echo ^/etc/runlevels/default/smartd$
+echo ^/etc/runlevels/default/xdm$
+echo ^/etc/runlevels/sysinit/opentmpfiles-dev$
+echo ^/etc/runlevels/sysinit/udev$
+echo ^/etc/runlevels/sysinit/udev-trigger$
 
 # Oh, yes, and that thing I mentioned at the beginning about "pidof" having an interesting
 # lineage. As it turns out, this command is really just a symbolic link to the "killall5"
