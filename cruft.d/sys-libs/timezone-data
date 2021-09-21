@@ -1,0 +1,2 @@
+# /etc/localtime should be a link, use 'emerge --config sys-libs/timezone-data' to create one based on /etc/timezone (which will be removed by this step)
+^/etc/localtime$

@@ -1,9 +1,19 @@
-^/lib[^/]*/rc/cache/$
-^/lib[^/]*/rc/cache/depconfig$
-^/lib[^/]*/rc/cache/deptree$
-^/lib[^/]*/rc/cache/nettree$
-^/lib[^/]*/rc/cache/rc.log$
-^/lib[^/]*/rc/cache/softlevel$
-^/lib[^/]*/rc/console/$
-^/var/lib/misc/random-seed$
-^/var/log/rc\.log$
+#!/usr/bin/env python
+print('^/lib[^/]*/rc/cache/$')
+print('^/lib[^/]*/rc/cache/depconfig$')
+print('^/lib[^/]*/rc/cache/deptree$')
+print('^/lib[^/]*/rc/cache/nettree$')
+print('^/lib[^/]*/rc/cache/rc.log$')
+print('^/lib[^/]*/rc/cache/softlevel$')
+print('^/lib[^/]*/rc/console/$')
+print('^/var/lib/misc/random-seed$')
+print('^/var/log/rc\\.log$')
+
+# 'rc-status -a -fini' misses certain services, so just exclude all available services on all runlevels
+import os
+services = list(os.popen('rc-service -l'))
+runlevels = os.popen('rc-status -l')
+for runlevel in runlevels:
+    for service in services:
+        service_fmt = service.rstrip().replace('.', '\\.')
+        print(f'^/etc/runlevels/{runlevel.rstrip()}/{service_fmt}$')

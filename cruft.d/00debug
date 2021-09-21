@@ -52,40 +52,6 @@ echo ^/proc$
 # Kernel sysfs mount point
 echo ^/sys$
 
-# basic linux
-echo ^/etc/localtime$
-
-# the softlinks in this dir are not removed when a service is unemerged.
-# neither do they belong to the service. how to clean up broken softlinks?
-#echo ^/etc/runlevels$
-echo ^/etc/runlevels/boot/consolefont$
-echo ^/etc/runlevels/boot/cronie$
-echo ^/etc/runlevels/boot/elogind$
-echo ^/etc/runlevels/boot/net.lo$
-echo ^/etc/runlevels/boot/numlock$
-echo ^/etc/runlevels/boot/opentmpfiles-setup$
-echo ^/etc/runlevels/boot/syslog-ng$
-echo ^/etc/runlevels/default/alsasound$
-echo ^/etc/runlevels/default/apache2$
-echo ^/etc/runlevels/default/bluetooth$
-echo ^/etc/runlevels/default/cupsd$
-echo ^/etc/runlevels/default/dbus$
-echo ^/etc/runlevels/default/dnsmasq$
-echo ^/etc/runlevels/default/dovecot$
-echo ^/etc/runlevels/default/hostapd$
-echo ^/etc/runlevels/default/iptables$
-echo ^/etc/runlevels/default/net.eth0$
-echo ^/etc/runlevels/default/net.eth1$
-echo ^/etc/runlevels/default/net.wlan1$
-echo ^/etc/runlevels/default/ntpd$
-echo ^/etc/runlevels/default/openvpn$
-echo ^/etc/runlevels/default/postfix$
-echo ^/etc/runlevels/default/smartd$
-echo ^/etc/runlevels/default/xdm$
-echo ^/etc/runlevels/sysinit/opentmpfiles-dev$
-echo ^/etc/runlevels/sysinit/udev$
-echo ^/etc/runlevels/sysinit/udev-trigger$
-
 # Oh, yes, and that thing I mentioned at the beginning about "pidof" having an interesting
 # lineage. As it turns out, this command is really just a symbolic link to the "killall5"
 # command:
