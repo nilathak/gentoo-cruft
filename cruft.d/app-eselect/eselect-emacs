@@ -4,6 +4,7 @@
 ^/usr/bin/ebrowse$
 ^/usr/bin/rcs-checkin$
 ^/usr/bin/grep-changelog$
+^/usr/include/emacs-module\.h$
 ^/usr/share/man/man1/emacsclient\.1\.bz2$
 ^/usr/share/man/man1/b2m\.1\.bz2$
 ^/usr/share/man/man1/ebrowse\.1\.bz2$

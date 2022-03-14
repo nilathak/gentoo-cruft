@@ -8,8 +8,8 @@ case $HOSTNAME in
         echo ^/etc/cron\\.daily/backup$
         echo ^/etc/cron\\.hourly/backup$
         echo ^/etc/cron\\.monthly/report$
-        echo ^/etc/pam\\.d/system-auth$
-        echo ^/etc/security/pam_usb\\.conf$
+	echo ^/etc/pipewire/pipewire\\.conf\\.d/rate\\.conf$
+	echo ^/etc/security/limits\\.d/40-pipewire\\.conf$
         echo ^/etc/smartd\\.conf$
         echo ^/etc/sysctl\\.conf$
 	;;

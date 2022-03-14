@@ -5,6 +5,8 @@ echo ^/etc/env\\.d/gcc/\\.NATIVE$
 echo ^/etc/env\\.d/gcc/config-$machine$
 echo ^/etc/ld\\.so\\.conf\\.d/05gcc-$machine\\.conf$
 echo ^/lib/cpp$ # If a C preprocessor is installed, /lib/cpp must be a reference to it, for historical reasons.
+echo ^/usr/bin/cc$
 echo ^/usr/bin/$machine-gcov-dump$
 echo ^/usr/bin/$machine-gcov-tool$
+echo ^/usr/bin/$machine-lto-dump$
 echo ^/usr/$machine/binutils-bin/lib/bfd-plugins/liblto_plugin\\.so$

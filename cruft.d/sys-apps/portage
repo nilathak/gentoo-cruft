@@ -29,6 +29,7 @@ for pkg in sorted(vartree.cpv_all()):
 
 portage_paths = [
     '/etc/csh.env',
+    '/etc/environment.d/10-gentoo-env.conf',
     '/etc/ld.so.cache',
     '/etc/portage/package.keywords/',
     '/etc/portage/package.mask/',

@@ -7,3 +7,4 @@
 ^/usr/bin/php$
 ^/usr/bin/php-config$
 ^/usr/bin/phpize$
+^/usr/bin/phar$

@@ -1,7 +1,6 @@
 # same for every host
 ^/etc/conf\.d/consolefont$
 ^/etc/conf\.d/keymaps$
-^/etc/conf\.d/ntpd$
 ^/etc/env\.d/02locale$
 ^/etc/locale\.gen$
 ^/etc/mail/aliases$
@@ -11,7 +10,6 @@
 ^/root/\.ssh/authorized_keys$
 ^/usr/bin/admin\.py$
 ^/usr/bin/backup\.py$
-
 # FIXME new dhcpcd version does not push hostname by default
 ^/etc/dhcpcd\.conf$
 

@@ -1,1 +1,2 @@
+^/var/lib/alsa/asound\.state$
 ^/var/lib/alsa/asound\.state\.lock$

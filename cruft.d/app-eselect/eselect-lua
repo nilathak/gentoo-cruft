@@ -1,0 +1,4 @@
+^/usr/bin/lua$
+^/usr/bin/luac$
+^/usr/share/man/man1/lua\.1\.bz2$
+^/usr/share/man/man1/luac\.1\.bz2$
