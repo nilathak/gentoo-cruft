@@ -8,15 +8,16 @@ case $HOSTNAME in
         echo ^/etc/cron\\.daily/backup$
         echo ^/etc/cron\\.hourly/backup$
         echo ^/etc/cron\\.monthly/report$
-	echo ^/etc/pipewire/pipewire\\.conf\\.d/rate\\.conf$
+        echo ^/etc/portage/package\\.accept_keywords/kde-.*$
+        echo ^/etc/portage/package\\.nowarn/kde$
 	echo ^/etc/security/limits\\.d/40-pipewire\\.conf$
         echo ^/etc/smartd\\.conf$
-        echo ^/etc/sysctl\\.conf$
+        echo ^/etc/sysctl\\.d/syncthing\\.conf$
 	;;
     
     baal)
 	echo ^/etc/dnsmasq\\.conf$
-	#echo ^/etc/conf\\.d/hostapd$
+	echo ^/etc/conf\\.d/hostapd$
 	echo ^/etc/cron\\.monthly/report$
 	echo ^/etc/dnsmasq\\.conf$
 	echo ^/etc/hostapd/hostapd\\.conf$
@@ -24,7 +25,7 @@ case $HOSTNAME in
 	echo ^/etc/inittab$
 	echo ^/etc/resolv\\.conf\\.head$
 	echo ^/etc/smartd\\.conf$
-	echo ^/etc/sysctl\\.conf$
+        echo ^/etc/sysctl\\.d/ip_forwarding\\.conf$
 	;;
 
     *)
