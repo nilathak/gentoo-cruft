@@ -1,5 +1,5 @@
-^/etc/sddm\.conf$
 ^/etc/sddm\.conf\.d/kde_settings\.conf$
+^/usr/share/sddm/themes/breeze/5120x2880\.jpg$
 ^/usr/share/sddm/themes/.*/theme\.conf\.user$
 ^/var/lib/sddm$
 ^/var/log/sddm\.log$

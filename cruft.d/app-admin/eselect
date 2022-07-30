@@ -15,6 +15,9 @@ echo ^/etc/env\\.d/99editor$
 # kernel
 echo ^/usr/src/linux$
 
+# locale
+echo ^/etc/env\\.d/02locale$
+
 # news
 echo ^/var/lib/gentoo/news$
 
