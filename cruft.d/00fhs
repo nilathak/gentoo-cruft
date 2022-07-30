@@ -119,15 +119,15 @@
 #^/usr/lib[^/]*/$           # Libraries
 #^/usr/lib[^/]*/sendmail$   # For historical reasons, /usr/lib/sendmail must be a symbolic link which resolves to the sendmail-compatible command provided by the system's mail transfer agent, if the latter exists.
 #^/usr/libexec/$            # Binaries run by other programs (optional)
-^/usr/local/$              # Local hierarchy
-^/usr/local/bin/$          # Local binaries
+#^/usr/local/$              # Local hierarchy
+#^/usr/local/bin/$          # Local binaries
 #^/usr/local/etc/$          # Host-specific system configuration for local binaries
 #^/usr/local/games/$        # Local game binaries
-^/usr/local/include/$      # Local C header files
-^/usr/local/lib[^/]*/$     # Local libraries
-^/usr/local/sbin/$         # Local system binaries
-^/usr/local/share/$        # Local architecture-independent hierarchy
-^/usr/local/src/$          # Local source code
+#^/usr/local/include/$      # Local C header files
+#^/usr/local/lib[^/]*/$     # Local libraries
+#^/usr/local/sbin/$         # Local system binaries
+#^/usr/local/share/$        # Local architecture-independent hierarchy
+#^/usr/local/src/$          # Local source code
 #^/usr/sbin/$               # Non-essential standard system binaries
 #^/usr/share/$              # Architecture-independent data
 #^/usr/share/color/$        # Color management information (optional)
