@@ -30,6 +30,7 @@ echo ^/etc/portage/package\\.mask/all$
 echo ^/etc/portage/package\\.nowarn/all$
 echo ^/etc/portage/package\\.unmask/all$
 echo ^/etc/portage/package\\.use/all$
+echo ^/etc/portage/repos\\.conf/eselect-repo\\.conf$
 echo ^/etc/smartd\\.conf$
 echo ^/var/lib/portage/world$
 

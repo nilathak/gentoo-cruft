@@ -19,7 +19,12 @@ echo ^/usr/src/linux$
 echo ^/etc/env\\.d/02locale$
 
 # news
-echo ^/var/lib/gentoo/news$
+cd /var/db/repos
+for repo in *; do
+    echo ^/var/lib/gentoo/news/news-$repo\\.read$
+    echo ^/var/lib/gentoo/news/news-$repo\\.skip$
+    echo ^/var/lib/gentoo/news/news-$repo\\.unread$
+done
 
 # pager
 echo ^/etc/env\\.d/99pager$
