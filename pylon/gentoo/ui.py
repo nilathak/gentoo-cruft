@@ -86,5 +86,6 @@ class ui(pylon.ui.ui):
             m['Subject'] = self._report_subject
             s = smtplib.SMTP(self._message_server.split('@')[1])
             s.set_debuglevel(0)
+            self.debug('Sending mail...')
             s.sendmail(m['From'], m['To'], m.as_string())
             s.quit()
