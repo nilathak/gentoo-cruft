@@ -1,4 +1,0 @@
-# dictionary generated during postinst
-^/usr/lib[^/]*/cracklib_dict\.hwm$
-^/usr/lib[^/]*/cracklib_dict\.pwd$
-^/usr/lib[^/]*/cracklib_dict\.pwi$

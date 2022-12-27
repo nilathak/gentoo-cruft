@@ -1,2 +1,0 @@
-^/var/lib/openntpd/chroot$
-^/var/lib/openntpd/ntpd\.drift$

@@ -182,7 +182,7 @@
 #^/var/lib/hwclock/adjtime$
 #^/var/lib/misc/$           # Miscellaneous state data
 #^/var/lib/xdm/$            # X display manager variable data (optional)
-^/var/lock/$               # Lock files
+^/var/lock$                # Lock files (symlink to /run/lock)
 #^/var/log/$                # Log files and directories
 ^/var/log/messages$        # system messages from syslogd
 ^/var/log/wtmp             # record of all logins and logouts

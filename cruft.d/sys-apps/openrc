@@ -7,6 +7,7 @@ print('^/lib[^/]*/rc/cache/rc.log$')
 print('^/lib[^/]*/rc/cache/softlevel$')
 print('^/lib[^/]*/rc/console/$')
 print('^/var/lib/misc/random-seed$')
+print('^/var/log/dmesg$')
 print('^/var/log/rc\\.log$')
 
 # 'rc-status -a -fini' misses certain services, so just exclude all available services on all runlevels
