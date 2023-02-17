@@ -127,51 +127,34 @@ class job(object):
                     stdout = subprocess.DEVNULL
 
                 self._proc = subprocess.Popen(self._cmd, shell=True,
-                                              bufsize=1,
                                               # always use bash
                                               executable='/bin/bash',
                                               stdin=None,
                                               stdout=stdout,
                                               stderr=stderr)
 
-                def reader(pipe, queue):
-                    try:
-                        with pipe:
-                            for line in iter(pipe.readline, b''):
-                                queue.put((pipe, line))
-                    finally:
-                        queue.put(None)
+                while self._proc.poll() == None:
+                    (proc_stdout_b, proc_stderr_b) = self._proc.communicate(None)
 
-                import queue
-                q = queue.Queue()
+                    if proc_stdout_b:
+                        proc_stdout = proc_stdout_b.decode().rstrip(os.linesep).rsplit(os.linesep)
+                        self.stdout.extend(proc_stdout)
+                        if (self._output and
+                            (self._output == 'both' or
+                             self._output == 'stdout')):
+                            [sys.stdout.write(self._prefix + l + os.linesep) for l in proc_stdout]
 
-                nr_of_readers = 0
-                if (self._output == 'both' or
-                    self._output == 'stdout'):
-                    nr_of_readers += 1
-                    threading.Thread(target=reader, daemon=True, args=(self._proc.stdout, q)).start()
-                if (self._output == 'both' or
-                    self._output == 'stderr'):
-                    nr_of_readers += 1
-                    threading.Thread(target=reader, daemon=True, args=(self._proc.stderr, q)).start()
-
-                for _ in range(nr_of_readers):
-                    for source, line in iter(q.get, None):
-                        l = line.decode()
-                        if source == self._proc.stdout:
-                            self.stdout.append(l.rstrip(os.linesep))
-                            if (self._output == 'both' or
-                                self._output == 'stdout'):
-                                sys.stdout.write(self._prefix + l)
-                        else:
-                            self.stderr.append(l.rstrip(os.linesep))
-                            if (self._output == 'both' or
-                                self._output == 'stderr'):
-                                sys.stderr.write(self._prefix + l)
+                    if proc_stderr_b:
+                        proc_stderr = proc_stderr_b.decode().rstrip(os.linesep).rsplit(os.linesep)
+                        self.stderr.extend(proc_stderr)
+                        if (self._output and
+                            (self._output == 'both' or
+                             self._output == 'stderr')):
+                            [sys.stderr.write(self._prefix + l + os.linesep) for l in proc_stderr]
 
                 # can be caught anyway if a subprocess does not abide
                 # to standard error codes
-                if self._proc.wait() != 0:
+                if self._proc.returncode != 0:
                     raise self._owner.exc_class('error executing "{0}"'.format(self._cmd), self)
 
             finally:
