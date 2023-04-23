@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-# ignore user cache
-cat /etc/passwd | awk -F: '{print $1}' | sed 's/\(.*\)/echo ^\/var\/tmp\/kdecache-\1$/' | sh

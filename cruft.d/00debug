@@ -6,17 +6,17 @@ cd /usr/bin && git ls-files | sed 's/\(.*\)/\/usr\/bin\/\1/' | sed 's/[^\/]*\(\/
 
 echo ^/usr/bin/games\\.py$
 
-# FIXME gentoo repo for github
+# gentoo repo for github
 echo ^/var/db/repos/fork$
 
-# FIXME search for matching pyc & py in ALL folders, not just PYTHONPATH
+# search for matching pyc & py in ALL folders, not just PYTHONPATH
 # this also results in huge exclusion list from sanity check -> verify this
 echo .*\\.pyc$
 echo .*\\.pyo$
 # add __pycache__ pattern to ignore python3 bytecode dirs (python 3.8 allows to redirect these files with PYTHONPYCACHEPREFIX)
 echo .*/__pycache__$
 
-# FIXME assign to some package, this is not covered by FHS 2.3
+# assign to some package, this is not covered by FHS 2.3
 # Virtual filesystem documenting kernel and process status as text files, e.g., uptime, network.
 echo ^/proc$
 # Kernel sysfs mount point
@@ -27,3 +27,7 @@ echo ^/sys$
 # Would like to make this more accurate.
 # Hopefully Gentoo will change to /srv/www someday to comply with FHS 2.3.
 echo ^/var/www$
+
+# ignore MD5 mismatch in texlive files
+echo ^/var/lib/texmf/web2c/.*\\.fmt$
+echo ^/var/lib/texmf/web2c/.*\\.log$

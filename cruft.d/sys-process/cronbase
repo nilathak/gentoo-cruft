@@ -1,5 +1,0 @@
-^/var/spool/cron/lastrun/cron\.hourly$
-^/var/spool/cron/lastrun/cron\.daily$
-^/var/spool/cron/lastrun/cron\.weekly$
-^/var/spool/cron/lastrun/cron\.monthly$
-^/var/spool/cron/lastrun/lock$

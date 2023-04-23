@@ -6,4 +6,6 @@ echo ^/boot/config\(-$kernel_r\)\?\(\\.old\)?$
 echo ^/boot/vmlinuz\(-$kernel_r\)\?\(\\.old\)?$
 echo ^/boot/System.map\(-$kernel_r\)\?\(\\.old\)?$
 echo ^/lib[^/]*/modules/$kernel_r$
+
+# ignore build tree
 echo ^/usr/src/linux-$kernel_r$
