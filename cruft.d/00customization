@@ -45,7 +45,6 @@ case $HOSTNAME in
         echo ^/etc/cron\\.hourly/backup$
         echo ^/etc/portage/package\\.accept_keywords/kde-.*$
         echo ^/etc/portage/package\\.nowarn/kde$
-	echo ^/etc/security/limits\\.d/40-pipewire\\.conf$
         echo ^/etc/sysctl\\.d/syncthing\\.conf$
 	;;
     

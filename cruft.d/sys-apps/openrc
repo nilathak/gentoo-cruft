@@ -1,11 +1,6 @@
 #!/usr/bin/env python
-print('^/lib[^/]*/rc/cache/$')
-print('^/lib[^/]*/rc/cache/depconfig$')
-print('^/lib[^/]*/rc/cache/deptree$')
-print('^/lib[^/]*/rc/cache/nettree$')
-print('^/lib[^/]*/rc/cache/rc.log$')
-print('^/lib[^/]*/rc/cache/softlevel$')
-print('^/lib[^/]*/rc/console/$')
+print('^/lib[^/]*/rc/cache$')
+print('^/lib[^/]*/rc/console$')
 print('^/var/lib/misc/random-seed$')
 print('^/var/log/dmesg$')
 print('^/var/log/rc\\.log$')

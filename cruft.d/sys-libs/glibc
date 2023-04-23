@@ -1,2 +1,3 @@
 ^/usr/lib[^/]*/gconv/gconv-modules\.cache$
 ^/usr/lib[^/]*/locale/locale-archive$
+^/var/cache/ldconfig/aux-cache$
