@@ -73,18 +73,18 @@ class ui(object):
         self._args = self.parser.parse_args()
 
         # determine default verbosity behavior
-        l = logging.INFO
+        level = logging.INFO
         if self.args.verbosity > 1 or self.args.dry_run or self.args.traceback:
-            l = logging.DEBUG
+            level = logging.DEBUG
         elif self.args.verbosity > 0:
-            l = ui.EXT_INFO
+            level = ui.EXT_INFO
 
         # quiet switch takes precedence
         if self.args.quiet > 1:
-            l = logging.ERROR
+            level = logging.ERROR
         elif self.args.quiet > 0:
-            l = logging.WARNING
-        self.logger.setLevel(l)
+            level = logging.WARNING
+        self.logger.setLevel(level)
 
     def cleanup(self):
         'stub for basic cleanup stuff'

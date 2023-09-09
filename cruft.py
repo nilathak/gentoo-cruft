@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Search filesystem cruft on a gentoo system, dedicated to OCD sufferers...
+'''Search filesystem cruft on a gentoo system, dedicated to all OCD afflicted...
 
 Inspired by ecatmur's cruft script:
 http://forums.gentoo.org/viewtopic-t-152618-postdays-0-postorder-asc-start-0.html
@@ -14,14 +14,15 @@ http://forums.gentoo.org/viewtopic-t-152618-postdays-0-postorder-asc-start-0.htm
 
 ====================================================================
 FIXME
+- concurrent execution of collect_* functions?
 - how to exclude symlink without ignoring complete subtree? (eg, /usr/lib, /usr/local/lib)
-- write gentoo forum post
 - provide git-based ebuild in gentoo-overlay (dependencies: gentoolkit, pylon, python3)
 - seperate pylon in own repo & provide git-based ebuild
 - document how ignore patterns can exclude non-portage files AND
     portage files (eg, mask unavoidable md5 check fails due to eselect)
     option to list excluded portage files?
 - create a usecase for a pattern file with ">=asdf-version" in its name
+- gentoo forum post
         
 ====================================================================
 '''
@@ -39,7 +40,7 @@ import re
 import sys
 import time
 
-# FIXME configurability
+# FIXME configurability (use TOML? https://docs.python.org/3/library/tomllib.html#module-tomllib)
 cache_base_path = '/tmp'
 cache_base_name = 'cruft_cache'
 comment_char = '#'
@@ -86,6 +87,7 @@ class cruft(pylon.base.base):
     __doc__ = sys.modules[__name__].__doc__
     
     def run_core(self):
+        # FIXME use self._data ?
         self.data = dict()
         getattr(self, self.__class__.__name__ + '_' + self.ui.args.op)()
 
@@ -149,7 +151,7 @@ class cruft(pylon.base.base):
                 try:
                     re.compile(regex)
                 except Exception:
-                    self.ui.error('Skipped invalid expression in {1} ({0})'.format(regex,pattern_file))
+                    self.ui.error(f'Skipped invalid expression in {pattern_file} ({regex})')
                 else:
                     # even if patterns are listed redundantly in one file, just add it once
                     re_map.setdefault(regex, set()).add(pattern_file)
@@ -246,7 +248,8 @@ class cruft(pylon.base.base):
         ignored = cruft - remaining
         for path in ignored:
             remaining = [x for x in remaining if not path.startswith(x) or x[-1] != '/']
-        
+
+        # FIXME use self._n_ignored ?
         self.n_ignored = len(cruft) - len(remaining)
 
         # add a date info to the remaining objects
@@ -267,7 +270,7 @@ class cruft(pylon.base.base):
         dirty = False
         if os.access(cache_path, os.R_OK):
             with open(cache_path, 'rb') as cache_file:
-                self.ui.info('Loading cache {0}...'.format(cache_path))
+                self.ui.info(f'Loading cache {cache_path}...')
                 self.data = pickle.load(cache_file)
 
         # determine portage dir state
@@ -316,6 +319,7 @@ class cruft(pylon.base.base):
         identify potential cruft objects on your system
         '''
         self.collect_cached_data()
+        # FIXME use self._cruft_dict ?
         self.cruft_dict = self.collect_cruft_objects()
 
         if self.cruft_dict:
@@ -343,9 +347,9 @@ class cruft(pylon.base.base):
                              [fmt.format(path_str=path_str(co),
                                          date_str=date_str(co))
                               for co in cruft_keys]))
-            self.ui.warning('Cruft objects identified: {0}'.format(len(cruft_keys)))
+            self.ui.warning(f'Cruft objects identified: {len(cruft_keys)}')
 
-        self.ui.info('Cruft files ignored: {0}'.format(self.n_ignored))
+        self.ui.info(f'Cruft files ignored: {self.n_ignored}')
 
     @pylon.log_exec_time
     def cruft_list(self):
@@ -353,6 +357,10 @@ class cruft(pylon.base.base):
         list ignore patterns and their origin + do some sanity checking
         '''
 
+        # FIXME check idea: ignored files which have not been updated in a while => potentially incorrect ignore pattern?
+        # FIXME check idea: determine nr of files in excluded subtrees => list largest ones
+        # FIXME check idea: list pattern files for packages which are not installed => delete, or keep for larger user base?
+        
         # re-using functions from report op requires sane args defaults
         self.ui.args.check = False
         self.ui.args.path = '/'
@@ -401,7 +409,7 @@ if __name__ == '__main__':
     #try:
     #   cProfile.run('app.run()', '/tmp/fooprof')
     #except:
-    #   pass
+    #   ...
     #import pstats
     #p = pstats.Stats('/tmp/fooprof')
     #p.sort_stats('cumulative').print_stats(30)

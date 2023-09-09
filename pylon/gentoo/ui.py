@@ -11,7 +11,6 @@ import email.mime.text
 import getpass
 import io
 import logging
-import os
 import pylon.ui
 import re
 import smtplib
@@ -54,7 +53,7 @@ class ui(pylon.ui.ui):
         # define operation subparsers with common options if class methods
         # with specific prefix are present
         ops_pattern = re.compile('^{0}_(.*)'.format(self._owner.__class__.__name__))
-        ops = [x for x in map(ops_pattern.match, dir(self._owner)) if x != None]
+        ops = [x for x in map(ops_pattern.match, dir(self._owner)) if x is not None]
         if ops:
             subparsers = self.parser.add_subparsers(title='operations', dest='op')
             for op in ops:

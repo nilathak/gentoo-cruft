@@ -78,7 +78,7 @@ class base(object):
                 [self.jobs[parent].extend(v) for (k, v) in self.jobs.items() if not k.is_alive()]
                 to_join = self.jobs[parent]
 
-            unhandled_exc = any(map(lambda x: x.exc_info != None, to_join))
+            unhandled_exc = any(map(lambda x: x.exc_info is not None, to_join))
 
             # all children finished
             del self.jobs[parent]
