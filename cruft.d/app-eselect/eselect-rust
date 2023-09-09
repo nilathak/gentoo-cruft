@@ -1,7 +1,9 @@
 ^/etc/env\.d/rust/last-set$
 ^/usr/bin/cargo$
+^/usr/bin/cargo-fmt$
 ^/usr/bin/rustc$
 ^/usr/bin/rustdoc$
+^/usr/bin/rustfmt$
 ^/usr/bin/rust-gdb$
 ^/usr/bin/rust-gdbgui$
 ^/usr/bin/rust-lldb$
