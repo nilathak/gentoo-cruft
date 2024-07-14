@@ -87,7 +87,7 @@ class gentoo_cli(pylon.base_cli.base_cli):
     async def cleanup(self):
         await super().cleanup()
 
-        if (self.args.mail and
+        if (getattr(self.args, 'mail', False) and
             len(self._mail_stream.getvalue()) > 0):
             m = email.mime.text.MIMEText(self._mail_stream.getvalue())
             m['From'] = self.__class__.__name__ + '@' + socket.getfqdn(self._hostname)
