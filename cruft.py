@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -Wdefault
 '''Search filesystem cruft on a gentoo system, dedicated to all OCD afflicted...
 
 Inspired by ecatmur's cruft script:
@@ -26,6 +26,7 @@ FIXME
         
 ====================================================================
 '''
+
 import functools
 import hashlib
 import gentoolkit.equery.check
@@ -33,12 +34,465 @@ import os
 import pickle
 import portage
 import pprint
-import pylon.base
-import pylon.gentoo.job
-import pylon.gentoo.ui
 import re
 import sys
 import time
+import pylon
+import sys
+import threading
+import argparse
+import logging
+import email.mime.text
+import getpass
+import io
+import smtplib
+import socket
+
+# ====================================================================
+import subprocess
+
+class job(object):
+
+    @property
+    def exc_info(self):
+        return self._exc_info
+    @property
+    def ret_val(self):
+        return self._ret_val
+    @property
+    def stderr(self):
+        return self._stderr
+    @property
+    def stdout(self):
+        return self._stdout
+    @property
+    def thread(self):
+        return self._thread
+    @property
+    def ui(self):
+        return self._ui
+
+    def __init__(self, ui, cmd, output='both', owner=None, passive=False, blocking=True, daemon=False, **kwargs):
+        self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
+        self._exc_info = None
+        self._kwargs = kwargs
+        self._ret_val = None
+        self._threadname = threading.current_thread().name
+        self._thread = threading.current_thread()
+        if not blocking:
+            self._thread = threading.Thread(target=self.exception_wrapper,
+                                            daemon=self._daemon)
+
+    def __call__(self):
+
+        # stay in current thread for blocking jobs, otherwise fork
+        if self._blocking:
+            self.exception_wrapper()
+        else:
+            self.thread.start()
+        return self
+
+    def join(self, **kwargs):
+        'join back to caller thread'
+        self.thread.join(**kwargs)
+
+    def exception_wrapper(self):
+        try:
+
+            # assign meaningful output prefixes (use parent thread id for
+            # blocking jobs)
+            if len(self._owner.jobs) == 0:
+                self._prefix = ''
+            else:
+                self._prefix = self.thread.name + ': '
+                for h in self.ui.logger.handlers:
+                    h.setFormatter(self.ui.formatter['threaded'])
+
+            # python function?
+            if hasattr(self._cmd, '__call__'):
+                self._ret_val = self._cmd(**self._kwargs)
+
+            # no? then assume it's a string containing an external command invocation
+            else:
+                self.exec_cmd()
+        except Exception as e:
+            # - save exception context to inform caller thread
+            # - print exception here to include correct thread info
+            if not self._blocking:
+                self._exc_info = sys.exc_info()
+                self.ui.excepthook(*self.exc_info)
+            else:
+                raise e
+        finally:
+            # reset the logger format if only Mainthread will be left
+            if not self._blocking and len(self._owner.jobs) <= 1:
+                for h in self.ui.logger.handlers:
+                    h.setFormatter(self.ui.formatter['default'])
+
+    def exec_cmd(self):
+        'execute subprocess on POSIX architectures'
+        self.ui.debug(self._cmd)
+        self._stdout = list()
+        self._stderr = list()
+        if not self.ui.args.dry_run or self._passive:
+
+            try:
+
+                # quiet switch takes precedence
+                if self.ui.args.quiet > 1:
+                    self._output = None
+                elif self.ui.args.quiet > 0:
+                    # do not interfere with already configured None
+                    if self._output:
+                        self._output = 'stderr'
+
+                # decode output string
+                stdout = subprocess.PIPE
+                stderr = subprocess.PIPE
+                if self._output == 'nopipes':
+                    stdout = None
+                    stderr = None
+                elif self._output == 'stdout':
+                    stderr = subprocess.DEVNULL
+                elif self._output == 'stderr':
+                    stdout = subprocess.DEVNULL
+
+                self._proc = subprocess.Popen(self._cmd, shell=True,
+                                              # always use bash
+                                              executable='/bin/bash',
+                                              stdin=None,
+                                              stdout=stdout,
+                                              stderr=stderr)
+
+                while self._proc.poll() == None:
+                    (proc_stdout_b, proc_stderr_b) = self._proc.communicate(None)
+
+                    if proc_stdout_b:
+                        proc_stdout = proc_stdout_b.decode().rstrip(os.linesep).rsplit(os.linesep)
+                        self.stdout.extend(proc_stdout)
+                        if (self._output and
+                            (self._output == 'both' or
+                             self._output == 'stdout')):
+                            [sys.stdout.write(self._prefix + l + os.linesep) for l in proc_stdout]
+
+                    if proc_stderr_b:
+                        proc_stderr = proc_stderr_b.decode().rstrip(os.linesep).rsplit(os.linesep)
+                        self.stderr.extend(proc_stderr)
+                        if (self._output and
+                            (self._output == 'both' or
+                             self._output == 'stderr')):
+                            [sys.stderr.write(self._prefix + l + os.linesep) for l in proc_stderr]
+
+                # can be caught anyway if a subprocess does not abide
+                # to standard error codes
+                if self._proc.returncode != 0:
+                    raise self._owner.exc_class('error executing "{0}"'.format(self._cmd), self)
+
+            finally:
+                self._ret_val = self._proc.returncode
+# ====================================================================
+class ui(object):
+    'nice command line user interface class used by pylon based scripts'
+    EXT_INFO = logging.INFO - 1
+
+    @property
+    def args(self):
+        return self._args
+    @property
+    def formatter(self):
+        return self._formatter
+    @property
+    def logger(self):
+        return self._logger
+    @property
+    def owner(self):
+        return self._owner
+    @property
+    def parser(self):
+        return self._parser
+
+    def __init__(self, owner):
+        self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
+
+        # Logger
+        ########################################
+        # define additional logging level for a better verbosity granularity
+        logging.addLevelName(ui.EXT_INFO, 'INFO')
+
+        # set logger name to class name
+        self._logger = logging.getLogger(self.owner.__class__.__name__)
+
+        # define format of logger output
+        fmt_str = '### %(name)s(%(asctime)s) %(levelname)s: %(message)s'
+        self._formatter = {}
+        self.formatter['default']  = logging.Formatter(fmt_str)
+        self.formatter['threaded'] = logging.Formatter('%(threadName)s: ' + fmt_str)
+
+        # add default handler for logging on stdout
+        self._handler = {}
+        self._handler['stdout'] = logging.StreamHandler(sys.stdout)
+        self._handler['stdout'].setFormatter(self.formatter['default'])
+        self.logger.addHandler(self._handler['stdout'])
+
+        # Argument Parser
+        ########################################
+        # take any existing class doc string from our owner and set it as description
+        self._parser = argparse.ArgumentParser(description=self.owner.__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+
+        # define the common basic set of arguments
+        self.parser.add_argument('--dry_run', action='store_true',
+                                 help='switch to passive behavior (no subprocess execution)')
+        self.parser.add_argument('-q', action='count', dest='quiet', default=0,
+                                 help='quiet output (multiply for more silence)')
+        self.parser.add_argument('--traceback', action='store_true',
+                                 help='enable python traceback for debugging purposes')
+        self.parser.add_argument('-v', action='count', dest='verbosity', default=0,
+                                 help='verbose output (multiply for more verbosity)')
+
+    def setup(self):
+        self._args = self.parser.parse_args()
+
+        # determine default verbosity behavior
+        level = logging.INFO
+        if self.args.verbosity > 1 or self.args.dry_run or self.args.traceback:
+            level = logging.DEBUG
+        elif self.args.verbosity > 0:
+            level = ui.EXT_INFO
+
+        # quiet switch takes precedence
+        if self.args.quiet > 1:
+            level = logging.ERROR
+        elif self.args.quiet > 0:
+            level = logging.WARNING
+        self.logger.setLevel(level)
+
+    def cleanup(self):
+        'stub for basic cleanup stuff'
+        pass
+
+    def handle_exception_gracefully(self, et):
+        'returns True if an exception should NOT be thrown at python interpreter'
+        return (
+            not self.args.traceback or
+
+            # catch only objects deriving from Exception. Omit trivial
+            # things like KeyboardInterrupt (derives from BaseException)
+            not issubclass(et, Exception)
+            )
+
+    def excepthook(self, et, ei, tb):
+        'pipe exceptions to logger, control traceback display. default exception handler will be replaced by this function'
+
+        # switch to a more passive exception handling mechanism if
+        # other threads are still active
+        origin = 'default'
+        if len(self.owner.jobs) > 0:
+            origin = 'thread'
+
+        if self.handle_exception_gracefully(et):
+            self.error(repr(et) + ' ' + str(ei))
+            if origin == 'default':
+                self.cleanup()
+
+                # generate error != 0
+                sys.exit(1)
+
+        else:
+            if origin == 'thread':
+                self.logger.exception('Traceback')
+            else:
+                # avoid losing any traceback info
+                sys.__excepthook__(et, ei, tb)
+
+    # logging level wrapper functions
+    def debug(self, msg):
+        self.logger.debug(msg)
+    def error(self, msg):
+        self.logger.error(msg)
+    def ext_info(self, msg):
+        self.logger.log(ui.EXT_INFO, msg)
+    def info(self, msg):
+        self.logger.info(msg)
+    def warning(self, msg):
+        self.logger.warning(msg)
+
+                
+# ====================================================================
+class base(object):
+    'common base for python scripts'
+
+    @property
+    def exc_class(self):
+        return self._exc_class
+    @property
+    def job_class(self):
+        return self._job_class
+    @property
+    def jobs(self):
+        return self._jobs
+    @property
+    def ui(self):
+        return self._ui
+    @property
+    def ui_class(self):
+        return self._ui_class
+    
+    def __init__(self,
+                 exc_class=pylon.script_error,
+                 job_class=job,
+                 ui_class=ui,
+                 owner=None):
+        self.__dict__.update({'_'+k:v for k,v in locals().items() if k != 'self'})
+        if self._owner:
+            self._exc_class = self._owner.exc_class
+            self._job_class = self._owner.job_class
+
+            # always reuse the interface of a calling script
+            self._ui = self._owner.ui
+        else:
+            # delay ui creation until now, so 'self' is defined for
+            # 'owner' option of ui
+            self._ui = self.ui_class(self)
+        self._jobs = {}
+
+    def dispatch(self, cmd, blocking=True, **kwargs):
+        'dispatch a job (see job class for details)'
+
+        job = self.job_class(ui=self.ui,
+                             owner=self,
+                             cmd=cmd,
+                             blocking=blocking,
+                             **kwargs)
+        if not blocking:
+            # always keep a valid thread dependency tree
+            parent = threading.current_thread()
+            self.jobs.setdefault(parent, list()).append(job)
+            
+        return job()
+
+    def join(self, **kwargs):
+        'join all known child threads, perform cleanup of job lists'
+        if len(self.jobs) > 0:
+            parent = threading.current_thread()
+
+            to_join = self.jobs[parent]
+            while any(map(lambda x: x.thread.is_alive(), to_join)):
+                for j in to_join:
+                    j.join(**kwargs)
+
+                # find zombie parents (add children to current thread)
+                [self.jobs[parent].extend(v) for (k, v) in self.jobs.items() if not k.is_alive()]
+                to_join = self.jobs[parent]
+
+            unhandled_exc = any(map(lambda x: x.exc_info is not None, to_join))
+
+            # all children finished
+            del self.jobs[parent]
+
+            if unhandled_exc:
+                raise self.exc_class('unhandled exception in child thread(s)')
+
+    def run(self):
+        'common entry point for debugging and exception purposes'
+
+        # install our custom exception handler
+        sys.excepthook = self.ui.excepthook
+
+        self.ui.setup()
+        self.run_core()
+        self.ui.cleanup()
+# ====================================================================
+class gentoo_job(job):
+    report_stream_lock = threading.Semaphore()
+
+    def exec_cmd(self):
+        try:
+            super().exec_cmd()
+        finally:
+            if self.ui.args.mail and not self.ui.args.dry_run:
+                with job.report_stream_lock:
+                    if ((self._output == 'both' or
+                        self._output == 'stdout') and
+                        len(self._stdout) > 0):
+                        self.ui.report_stream.write(self._prefix + (os.linesep + self._prefix).join(self._stdout) + os.linesep)
+                    elif ((self._output == 'stderr') and
+                          len(self._stderr) > 0):
+                        self.ui.report_stream.write(self._prefix + (os.linesep + self._prefix).join(self._stderr) + os.linesep)
+# ====================================================================
+class gentoo_ui(ui):
+
+    @property
+    def fqdn(self):
+        return self._fqdn
+    @property
+    def hostname(self):
+        return self._hostname
+    @property
+    def report_stream(self):
+        return self._report_stream
+
+    def __init__(self, owner):
+        super().__init__(owner)
+
+        # add handler for mail logging
+        self._report_stream = io.StringIO()
+        self._handler['mail'] = logging.StreamHandler(self._report_stream)
+        self._handler['mail'].setFormatter(self.formatter['default'])
+        self.logger.addHandler(self._handler['mail'])
+
+        # hooray, more emails (/etc/mail/aliases or ~/.forward needs to be set)...
+        self._message_server = getpass.getuser() + '@localhost'
+
+        self.parser.add_argument('--mail', action='store_true',
+                                 help='generate additional mail report (def: <user>@localhost)')
+
+        # when using operations:
+        # - use self.parser_common from here on instead of self.parser
+        # - do not forget to run init_op_parser after all parser_common statements in __init__
+        self.parser_common = argparse.ArgumentParser(conflict_handler='resolve',
+                                                     parents=[self.parser])
+
+    def init_op_parser(self):
+        # define operation subparsers with common options if class methods
+        # with specific prefix are present
+        ops_pattern = re.compile('^{0}_(.*)'.format(self._owner.__class__.__name__))
+        ops = [x for x in map(ops_pattern.match, dir(self._owner)) if x is not None]
+        if ops:
+            subparsers = self.parser.add_subparsers(title='operations', dest='op')
+            for op in ops:
+                setattr(self, 'parser_' + op.group(1),
+                        subparsers.add_parser(op.group(1),
+                                              conflict_handler='resolve',
+                                              parents=[self.parser_common],
+                                              description=getattr(self._owner, op.string).__doc__,
+                                              help=getattr(self._owner, op.string).__doc__))
+
+    def setup(self):
+        super().setup()
+
+        self._hostname = socket.gethostname()
+        self._fqdn = socket.getfqdn(self._hostname)
+
+        self._report_subject = 'report'
+        if hasattr(self.args, 'op'):
+            self._report_subject = self.args.op
+
+    def cleanup(self):
+        'optionally send an email with all output to global message server'
+        if (self.args.mail and
+            not self.args.dry_run and
+            len(self.report_stream.getvalue()) > 0):
+            m = email.mime.text.MIMEText(self.report_stream.getvalue())
+            m['From'] = self._owner.__class__.__name__ + '@' + self.fqdn
+            m['To'] = self._message_server
+            m['Subject'] = self._report_subject
+            s = smtplib.SMTP(self._message_server.split('@')[1])
+            s.set_debuglevel(0)
+            self.debug('Sending mail...')
+            s.sendmail(m['From'], m['To'], m.as_string())
+            s.quit()
+# ====================================================================
+
 
 # FIXME configurability (use TOML? https://docs.python.org/3/library/tomllib.html#module-tomllib)
 cache_base_path = '/tmp'
@@ -59,7 +513,7 @@ po_digest = 2
 # cruft dict indices
 co_date = 0
 
-class ui(pylon.gentoo.ui.ui):
+class ui(gentoo_ui):
     def __init__(self, owner):
         super().__init__(owner)
         self.parser_common.add_argument('-i', '--pattern_root',
@@ -83,7 +537,7 @@ class ui(pylon.gentoo.ui.ui):
             self.parser.print_help()
             raise self.owner.exc_class('Specify at least one subcommand operation')
         
-class cruft(pylon.base.base):
+class cruft(base):
     __doc__ = sys.modules[__name__].__doc__
     
     def run_core(self):
@@ -113,6 +567,7 @@ class cruft(pylon.base.base):
                     if not vardb.match(pkg):
                         self.ui.ext_info('Not installed: ' + pkg)
                         continue
+                    self.ui.ext_info('Installed: ' + pkg)
                 pattern_files.append(os.path.join(root, f))
 
         re_map = dict()
@@ -144,7 +599,7 @@ class cruft(pylon.base.base):
             # - interpret spaces as delimiter for multiple patterns
             #   on one line. needed for automatic bash expansion by
             #   {}. however this breaks ignore patterns with spaces!
-            re_list_of_file = pylon.flatten(x.rstrip(os.linesep).strip().split() for x in re_list_raw)
+            re_list_of_file = pylon.flatten(x.removesuffix(os.linesep).strip().split() for x in re_list_raw)
 
             # pattern sanity checks, to facilitate pattern file debugging
             for regex in re_list_of_file:
@@ -313,7 +768,6 @@ class cruft(pylon.base.base):
                 self.ui.info('Storing cache...')
                 pickle.dump(self.data, cache_file)
 
-    @pylon.log_exec_time
     def cruft_report(self):
         '''
         identify potential cruft objects on your system
@@ -351,7 +805,6 @@ class cruft(pylon.base.base):
 
         self.ui.info(f'Cruft files ignored: {self.n_ignored}')
 
-    @pylon.log_exec_time
     def cruft_list(self):
         '''
         list ignore patterns and their origin + do some sanity checking
@@ -402,7 +855,7 @@ class cruft(pylon.base.base):
                 pprint.pprint({k:v})
                 
 if __name__ == '__main__':
-    app = cruft(job_class=pylon.gentoo.job.job,
+    app = cruft(job_class=gentoo_job,
                 ui_class=ui)
     app.run()
     #import cProfile
