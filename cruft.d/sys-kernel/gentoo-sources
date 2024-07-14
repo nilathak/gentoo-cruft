@@ -9,3 +9,9 @@ echo ^/lib[^/]*/modules/$kernel_r$
 
 # ignore build tree
 echo ^/usr/src/linux-$kernel_r$
+
+# not covered by FHS, kernel procfs mount point
+echo ^/proc$
+
+# not covered by FHS, kernel sysfs mount point
+echo ^/sys$

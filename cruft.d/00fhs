@@ -184,7 +184,7 @@
 #^/var/lib/xdm/$            # X display manager variable data (optional)
 ^/var/lock$                # Lock files (symlink to /run/lock)
 #^/var/log/$                # Log files and directories
-^/var/log/messages$        # system messages from syslogd
+#^/var/log/messages$        # system messages from syslogd
 ^/var/log/wtmp             # record of all logins and logouts
 #^/var/mail/$               # User mailbox files (optional)
 #^/var/opt/$                # Variable data for /opt
