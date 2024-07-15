@@ -17,6 +17,12 @@ echo ^/root/\\.ssh/authorized_keys$
 echo ^/usr/bin/admin\\.py$
 echo ^/usr/bin/backup\\.py$
 
+# FIXME cruft/pylon repo
+echo ^/usr/bin/\\.git$
+cd /usr/bin && git ls-files | sed 's/\(.*\)/\/usr\/bin\/\1/' | sed 's/[^\/]*\(\/.*\)/\1/' | sed 's/\(\/.*\)/\1/' | sed 's/\+/\\+/g' | sed 's/\./\\./g' | sed 's/\(.*\)/^\1$/'
+echo ^/usr/bin/pylon/__pycache__$
+echo ^/usr/bin/pylon/gentoo/__pycache__$
+
 # on every host, different
 # ==============================================
 echo ^/etc/conf\\.d/hostname$
@@ -38,6 +44,8 @@ echo ^/var/lib/portage/world$
 # ==============================================
 case $HOSTNAME in
     diablo)
+        # FIXME needed to fix git commit pinentry for root
+        echo ^/etc/bash/bashrc\\.d/99-gpg-tty\\.bash$
         echo ^/etc/conf\\.d/apache2$
         echo ^/etc/conf\\.d/bluetooth$
         echo ^/etc/conf\\.d/display-manager$
@@ -51,12 +59,6 @@ case $HOSTNAME in
         echo ^/usr/bin/games\\.py$
         echo ^/var/db/repos/fork$
 
-        # FIXME cruft/pylon repo
-        echo ^/usr/bin/\\.git$
-        cd /usr/bin && git ls-files | sed 's/\(.*\)/\/usr\/bin\/\1/' | sed 's/[^\/]*\(\/.*\)/\1/' | sed 's/\(\/.*\)/\1/' | sed 's/\+/\\+/g' | sed 's/\./\\./g' | sed 's/\(.*\)/^\1$/'
-        echo ^/usr/bin/pylon/__pycache__$
-        echo ^/usr/bin/pylon/gentoo/__pycache__$
-         
         # FIXME Web applications and data
         # As per GLEP 11: http://www.gentoo.org/proj/en/glep/glep-0011.html
         # Would like to make this more accurate.
