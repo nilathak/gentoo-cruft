@@ -410,7 +410,7 @@ class gentoo_job(job):
             super().exec_cmd()
         finally:
             if self.ui.args.mail and not self.ui.args.dry_run:
-                with job.report_stream_lock:
+                with gentoo_job.report_stream_lock:
                     if ((self._output == 'both' or
                         self._output == 'stdout') and
                         len(self._stdout) > 0):
