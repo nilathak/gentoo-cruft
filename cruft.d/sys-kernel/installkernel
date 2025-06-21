@@ -1,0 +1,2 @@
+^/var/log/installkernel\.log$
+^/var/lib/misc/installkernel$
