@@ -51,6 +51,7 @@ case $HOSTNAME in
         echo ^/etc/conf\\.d/display-manager$
         echo ^/etc/cron\\.daily/backup$
         echo ^/etc/cron\\.hourly/backup$
+        echo ^/etc/dovecot/dovecot\\.conf$
         echo ^/etc/portage/package\\.accept_keywords/kde-.*$
         echo ^/etc/portage/package\\.nowarn/kde$
         # FIXME maybe baal needs a custom version as well with only compatibility_level???
